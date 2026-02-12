@@ -204,10 +204,9 @@ export default function ExtraOrderPage() {
             <select value={desiredTime} onChange={e => setDesiredTime(e.target.value)}
               className="w-full px-3 py-2.5 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500">
               <option value="">시간 선택</option>
-              <option value="09:00~12:00">오전 (09~12시)</option>
-              <option value="12:00~15:00">오후 초 (12~15시)</option>
-              <option value="15:00~18:00">오후 후 (15~18시)</option>
-              <option value="시간 무관">시간 무관</option>
+              {Array.from({ length: 11 }, (_, i) => i + 8).map(h => (
+                <option key={h} value={`${String(h).padStart(2,'0')}:00`}>{String(h).padStart(2,'0')}:00</option>
+              ))}
             </select>
           </div>
           <div>
