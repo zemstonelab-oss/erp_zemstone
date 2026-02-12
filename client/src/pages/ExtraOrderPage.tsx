@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import api from '../api/client';
-import type { Product, ExtraOrderRequest } from '../types';
+import type { Product, ExtraOrderRequest, InventoryItem } from '../types';
 
 export default function ExtraOrderPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [requests, setRequests] = useState<ExtraOrderRequest[]>([]);
+  const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [productId, setProductId] = useState('');
   const [quantity, setQuantity] = useState('');
   const [reason, setReason] = useState('');
@@ -12,15 +13,23 @@ export default function ExtraOrderPage() {
   const [desiredDate, setDesiredDate] = useState('');
 
   const load = async () => {
-    const [p, r] = await Promise.all([
+    const [p, r, inv] = await Promise.all([
       api.get('/products'),
       api.get('/extra-orders'),
+      api.get('/inventory'),
     ]);
     setProducts(p.data.filter((x: Product) => x.isActive));
     setRequests(r.data);
+    setInventory(inv.data);
   };
 
   useEffect(() => { load(); }, []);
+
+  const handleInventoryRequest = (item: InventoryItem) => {
+    setProductId(String(item.productId));
+    // scroll to form
+    document.getElementById('extra-order-form')?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   const handleSubmit = async () => {
     if (!productId || !quantity) { alert('품목과 수량을 입력하세요.'); return; }
@@ -49,8 +58,57 @@ export default function ExtraOrderPage() {
         <h1 className="text-2xl font-bold">출고 요청</h1>
       </div>
 
+      {/* My Inventory */}
+      {inventory.length > 0 && (
+        <div className="bg-white rounded-xl shadow overflow-hidden mb-6">
+          <div className="px-4 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white">
+            <h3 className="text-sm font-semibold">내 재고 현황</h3>
+          </div>
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-4 py-3 text-left">품목명</th>
+                <th className="px-4 py-3 text-center">총 발주량</th>
+                <th className="px-4 py-3 text-center">출고량</th>
+                <th className="px-4 py-3 text-center">잔량</th>
+                <th className="px-4 py-3 text-center">출고 요청</th>
+              </tr>
+            </thead>
+            <tbody>
+              {inventory.map(item => {
+                const remaining = item.totalOrdered - item.totalShipped;
+                const isLow = item.totalOrdered > 0 && remaining <= item.totalOrdered * 0.2;
+                return (
+                  <tr key={item.id} className="border-t hover:bg-gray-50">
+                    <td className="px-4 py-3 font-medium">{item.product.name}</td>
+                    <td className="px-4 py-3 text-center">{item.totalOrdered}</td>
+                    <td className="px-4 py-3 text-center">{item.totalShipped}</td>
+                    <td className={`px-4 py-3 text-center font-semibold ${isLow ? 'text-red-600' : ''}`}>
+                      {remaining}
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <button
+                        disabled={remaining <= 0}
+                        onClick={() => handleInventoryRequest(item)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                          remaining <= 0
+                            ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                            : 'bg-blue-500 text-white hover:bg-blue-600'
+                        }`}
+                      >
+                        출고 요청
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+
       {/* Request Form */}
-      <div className="bg-white rounded-xl shadow p-5 mb-6">
+      <div id="extra-order-form" className="bg-white rounded-xl shadow p-5 mb-6">
         <h3 className="font-semibold mb-4">새 요청</h3>
         <div className="grid grid-cols-3 gap-4 mb-3">
           <div>
