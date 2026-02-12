@@ -91,3 +91,58 @@ export interface BranchProgress {
   shipped: number;
   rate: number;
 }
+
+export interface ExtraOrderRequest {
+  id: number;
+  branchId: number;
+  productId: number;
+  quantity: number;
+  reason?: string;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  requestedBy?: number;
+  reviewedBy?: number;
+  reviewedAt?: string;
+  createdAt: string;
+  branch: Branch;
+  product: Product;
+  requester?: { name: string };
+  reviewer?: { name: string };
+}
+
+export interface Notification {
+  id: number;
+  userId: number;
+  type: string;
+  title?: string;
+  message?: string;
+  isRead: boolean;
+  createdAt: string;
+}
+
+export interface AlertThreshold {
+  id: number;
+  branchId: number;
+  productId: number;
+  threshold: number;
+  branch: Branch;
+  product: Product;
+}
+
+export interface PaginatedShipments {
+  data: Shipment[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface UserInfo {
+  id: number;
+  username: string;
+  name: string;
+  role: Role;
+  branchId: number | null;
+  isActive: boolean;
+  createdAt: string;
+  branch?: { name: string };
+}

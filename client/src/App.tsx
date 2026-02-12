@@ -6,6 +6,10 @@ import DashboardPage from './pages/DashboardPage';
 import ShipmentPage from './pages/ShipmentPage';
 import RoundsPage from './pages/RoundsPage';
 import AdminPage from './pages/AdminPage';
+import ExtraOrderPage from './pages/ExtraOrderPage';
+import MyHistoryPage from './pages/MyHistoryPage';
+import ExtraOrdersManagePage from './pages/ExtraOrdersManagePage';
+import HistoryPage from './pages/HistoryPage';
 import Layout from './components/common/Layout';
 import RoleGuard from './guards/RoleGuard';
 
@@ -41,6 +45,18 @@ export default function App() {
         } />
         <Route path="/rounds" element={
           <RoleGuard roles={['ADMIN', 'HQ']}><RoundsPage /></RoleGuard>
+        } />
+        <Route path="/extra-order" element={
+          <RoleGuard roles={['BRANCH']}><ExtraOrderPage /></RoleGuard>
+        } />
+        <Route path="/my-history" element={
+          <RoleGuard roles={['BRANCH']}><MyHistoryPage /></RoleGuard>
+        } />
+        <Route path="/extra-orders" element={
+          <RoleGuard roles={['ADMIN', 'HQ']}><ExtraOrdersManagePage /></RoleGuard>
+        } />
+        <Route path="/history" element={
+          <RoleGuard roles={['ADMIN', 'HQ']}><HistoryPage /></RoleGuard>
         } />
         <Route path="/admin" element={
           <RoleGuard roles={['ADMIN']}><AdminPage /></RoleGuard>

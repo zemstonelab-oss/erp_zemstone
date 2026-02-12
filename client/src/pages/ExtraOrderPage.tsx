@@ -1,0 +1,116 @@
+import { useEffect, useState } from 'react';
+import api from '../api/client';
+import type { Product, ExtraOrderRequest } from '../types';
+
+export default function ExtraOrderPage() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [requests, setRequests] = useState<ExtraOrderRequest[]>([]);
+  const [productId, setProductId] = useState('');
+  const [quantity, setQuantity] = useState('');
+  const [reason, setReason] = useState('');
+
+  const load = async () => {
+    const [p, r] = await Promise.all([
+      api.get('/products'),
+      api.get('/extra-orders'),
+    ]);
+    setProducts(p.data.filter((x: Product) => x.isActive));
+    setRequests(r.data);
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const handleSubmit = async () => {
+    if (!productId || !quantity) { alert('품목과 수량을 입력하세요.'); return; }
+    if (!confirm('추가 발주를 요청하시겠습니까?')) return;
+    await api.post('/extra-orders', {
+      productId: Number(productId),
+      quantity: Number(quantity),
+      reason: reason || undefined,
+    });
+    setProductId(''); setQuantity(''); setReason('');
+    alert('요청이 등록되었습니다.');
+    load();
+  };
+
+  const statusLabel: Record<string, { text: string; color: string }> = {
+    PENDING: { text: '대기중', color: 'bg-yellow-100 text-yellow-700' },
+    APPROVED: { text: '승인', color: 'bg-green-100 text-green-700' },
+    REJECTED: { text: '거절', color: 'bg-red-100 text-red-700' },
+  };
+
+  return (
+    <div>
+      <div className="flex justify-between items-center mb-6 pb-4 border-b-2 border-gray-200">
+        <h1 className="text-2xl font-bold">추가발주 요청</h1>
+      </div>
+
+      {/* Request Form */}
+      <div className="bg-white rounded-xl shadow p-5 mb-6">
+        <h3 className="font-semibold mb-4">새 요청</h3>
+        <div className="grid grid-cols-3 gap-4">
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-1">품목</label>
+            <select value={productId} onChange={e => setProductId(e.target.value)}
+              className="w-full px-3 py-2.5 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500">
+              <option value="">선택하세요</option>
+              {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-1">수량</label>
+            <input type="number" min={1} value={quantity} onChange={e => setQuantity(e.target.value)}
+              placeholder="수량 입력" className="w-full px-3 py-2.5 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500" />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-1">사유</label>
+            <input value={reason} onChange={e => setReason(e.target.value)}
+              placeholder="사유 입력 (선택)" className="w-full px-3 py-2.5 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500" />
+          </div>
+        </div>
+        <button onClick={handleSubmit}
+          className="mt-4 px-6 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg font-semibold hover:shadow-lg transition">
+          요청하기
+        </button>
+      </div>
+
+      {/* My Requests */}
+      <div className="bg-white rounded-xl shadow overflow-hidden">
+        <div className="px-4 py-3 bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white">
+          <h3 className="text-sm font-semibold">내 요청 내역</h3>
+        </div>
+        <table className="w-full text-sm">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-4 py-3 text-left">품목</th>
+              <th className="px-4 py-3 text-center">수량</th>
+              <th className="px-4 py-3 text-left">사유</th>
+              <th className="px-4 py-3 text-center">상태</th>
+              <th className="px-4 py-3 text-center">요청일</th>
+            </tr>
+          </thead>
+          <tbody>
+            {requests.map(r => (
+              <tr key={r.id} className="border-t hover:bg-gray-50">
+                <td className="px-4 py-3 font-medium">{r.product.name}</td>
+                <td className="px-4 py-3 text-center">{r.quantity}</td>
+                <td className="px-4 py-3 text-gray-600">{r.reason || '-'}</td>
+                <td className="px-4 py-3 text-center">
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusLabel[r.status].color}`}>
+                    {statusLabel[r.status].text}
+                  </span>
+                </td>
+                <td className="px-4 py-3 text-center text-gray-500">
+                  {new Date(r.createdAt).toLocaleDateString('ko-KR')}
+                </td>
+              </tr>
+            ))}
+            {requests.length === 0 && (
+              <tr><td colSpan={5} className="px-4 py-10 text-center text-gray-400">요청 내역이 없습니다.</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}

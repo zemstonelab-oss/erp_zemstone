@@ -111,7 +111,13 @@ export default function DashboardPage() {
     <div>
       <div className="flex justify-between items-center mb-6 pb-4 border-b-2 border-gray-200">
         <h1 className="text-2xl font-bold">Dashboard</h1>
-        <span className="text-sm text-gray-500 bg-white px-4 py-2 rounded-lg shadow-sm">{today}</span>
+        <div className="flex items-center gap-3">
+          <button onClick={() => window.open('/api/export/inventory', '_blank')}
+            className="px-3 py-2 bg-green-600 text-white rounded-lg text-xs font-semibold hover:bg-green-700 transition">
+            📥 엑셀
+          </button>
+          <span className="text-sm text-gray-500 bg-white px-4 py-2 rounded-lg shadow-sm">{today}</span>
+        </div>
       </div>
 
       {/* Summary Cards */}

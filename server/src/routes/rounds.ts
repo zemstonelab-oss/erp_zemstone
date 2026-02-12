@@ -5,6 +5,7 @@ import { authenticate } from '../middleware/auth';
 import { requireRole } from '../middleware/role';
 import { validate } from '../middleware/validate';
 import { recalculateAllInventory } from '../services/inventory';
+import { checkLowStockAndNotify } from '../services/notification';
 
 const prisma = new PrismaClient();
 export const roundsRouter = Router();

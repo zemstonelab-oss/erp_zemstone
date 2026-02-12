@@ -23,7 +23,7 @@ export default function ShipmentPage() {
     setBranches(b.data.filter((x: Branch) => x.isActive));
     setProducts(p.data.filter((x: Product) => x.isActive));
     setInventory(inv.data);
-    setShipments(sh.data);
+    setShipments(sh.data.data || sh.data);
   };
 
   useEffect(() => { load(); }, []);

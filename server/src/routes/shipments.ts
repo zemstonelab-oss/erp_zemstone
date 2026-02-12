@@ -5,6 +5,7 @@ import { authenticate } from '../middleware/auth';
 import { requireRole } from '../middleware/role';
 import { validate } from '../middleware/validate';
 import { recalculateInventory } from '../services/inventory';
+import { checkLowStockAndNotify } from '../services/notification';
 
 const prisma = new PrismaClient();
 export const shipmentsRouter = Router();
@@ -26,17 +27,31 @@ shipmentsRouter.get('/', authenticate, async (req: Request, res: Response) => {
     if (req.user!.role === 'BRANCH' && req.user!.branchId) {
       where.branchId = req.user!.branchId;
     }
+    if (req.query.from || req.query.to) {
+      where.createdAt = {};
+      if (req.query.from) where.createdAt.gte = new Date(req.query.from as string);
+      if (req.query.to) where.createdAt.lte = new Date(req.query.to as string + 'T23:59:59');
+    }
 
-    const shipments = await prisma.shipment.findMany({
-      where,
-      orderBy: { createdAt: 'desc' },
-      include: {
-        branch: true,
-        items: { include: { product: true } },
-        creator: { select: { name: true } },
-      },
-    });
-    res.json(shipments);
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 50;
+    const offset = (page - 1) * limit;
+
+    const [shipments, total] = await Promise.all([
+      prisma.shipment.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: offset,
+        take: limit,
+        include: {
+          branch: true,
+          items: { include: { product: true } },
+          creator: { select: { name: true } },
+        },
+      }),
+      prisma.shipment.count({ where }),
+    ]);
+    res.json({ data: shipments, total, page, limit, totalPages: Math.ceil(total / limit) });
   } catch { res.status(500).json({ error: '서버 오류' }); }
 });
 
@@ -63,9 +78,10 @@ shipmentsRouter.post('/', authenticate, requireRole('ADMIN'), validate(shipmentS
       },
     });
 
-    // Update inventory for each item
+    // Update inventory and check low stock
     for (const item of items) {
       await recalculateInventory(branchId, item.productId);
+      await checkLowStockAndNotify(branchId, item.productId);
     }
 
     res.status(201).json(shipment);

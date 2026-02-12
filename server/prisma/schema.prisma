@@ -48,6 +48,7 @@ model Branch {
   shipments         Shipment[]
   inventory         Inventory[]
   extraOrderRequests ExtraOrderRequest[]
+  alertThresholds    AlertThreshold[]
 
   @@map("branches")
 }
@@ -66,6 +67,7 @@ model Product {
   shipmentItems      ShipmentItem[]
   inventory          Inventory[]
   extraOrderRequests ExtraOrderRequest[]
+  alertThresholds    AlertThreshold[]
 
   @@map("products")
 }
@@ -174,4 +176,17 @@ model Notification {
   user User @relation(fields: [userId], references: [id])
 
   @@map("notifications")
+}
+
+model AlertThreshold {
+  id        Int @id @default(autoincrement())
+  branchId  Int @map("branch_id")
+  productId Int @map("product_id")
+  threshold Int
+
+  branch  Branch  @relation(fields: [branchId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@unique([branchId, productId])
+  @@map("alert_thresholds")
 }
