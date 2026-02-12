@@ -13,6 +13,7 @@ import { notificationsRouter } from './routes/notifications';
 import { alertThresholdsRouter } from './routes/alert-thresholds';
 import { usersRouter } from './routes/users';
 import { exportRouter } from './routes/export';
+import { billingRouter } from './routes/billing';
 
 dotenv.config();
 
@@ -34,6 +35,7 @@ app.use('/api/notifications', notificationsRouter);
 app.use('/api/alert-thresholds', alertThresholdsRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/export', exportRouter);
+app.use('/api/billing', billingRouter);
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok' });

@@ -10,6 +10,7 @@ import ExtraOrderPage from './pages/ExtraOrderPage';
 import MyHistoryPage from './pages/MyHistoryPage';
 import ExtraOrdersManagePage from './pages/ExtraOrdersManagePage';
 import HistoryPage from './pages/HistoryPage';
+import BillingPage from './pages/BillingPage';
 import Layout from './components/common/Layout';
 import RoleGuard from './guards/RoleGuard';
 
@@ -57,6 +58,9 @@ export default function App() {
         } />
         <Route path="/history" element={
           <RoleGuard roles={['ADMIN', 'HQ']}><HistoryPage /></RoleGuard>
+        } />
+        <Route path="/billing" element={
+          <RoleGuard roles={['ADMIN']}><BillingPage /></RoleGuard>
         } />
         <Route path="/admin" element={
           <RoleGuard roles={['ADMIN']}><AdminPage /></RoleGuard>
