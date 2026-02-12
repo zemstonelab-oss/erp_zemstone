@@ -11,6 +11,7 @@ export default function DashboardPage() {
   const [rounds, setRounds] = useState<OrderRound[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [selectedRoundIdx, setSelectedRoundIdx] = useState<number | null>(null); // null = 전체
 
   const load = async () => {
     const [s, p, inv, r, b, pr] = await Promise.all([
@@ -34,8 +35,6 @@ export default function DashboardPage() {
   const today = new Date().toLocaleDateString('ko-KR', {
     year: 'numeric', month: 'long', day: 'numeric', weekday: 'long',
   });
-
-  const currentRound = rounds.length > 0 ? rounds[0] : null;
 
   // Build matrix helpers
   const getInv = (branchId: number, productId: number) =>
@@ -220,12 +219,31 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* 본사 발주 수량 (현재 차수) */}
+        {/* 본사 발주 수량 (차수별 네비게이션) */}
         <div className="bg-white rounded-xl shadow overflow-hidden">
-          <div className="px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white">
-            <h2 className="text-sm font-semibold">
-              본사 발주 수량_{currentRound?.roundNo || '-'}차
-            </h2>
+          <div className="px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white flex items-center justify-between">
+            <h2 className="text-sm font-semibold">본사 발주 수량</h2>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setSelectedRoundIdx(prev => prev === null ? rounds.length - 1 : prev > 0 ? prev - 1 : prev)}
+                disabled={selectedRoundIdx === 0}
+                className="px-2 py-0.5 rounded bg-blue-400/50 hover:bg-blue-400 disabled:opacity-30 disabled:cursor-not-allowed text-white text-xs font-bold transition"
+              >◀</button>
+              <button
+                onClick={() => setSelectedRoundIdx(null)}
+                className={`px-2 py-0.5 rounded text-xs font-semibold transition ${selectedRoundIdx === null ? 'bg-white text-blue-600' : 'bg-blue-400/50 hover:bg-blue-400 text-white'}`}
+              >전체</button>
+              <span className="text-xs font-medium min-w-[80px] text-center">
+                {selectedRoundIdx === null
+                  ? '전체 합산'
+                  : `${rounds[selectedRoundIdx]?.roundNo}차 (${new Date(rounds[selectedRoundIdx]?.orderDate).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })})`}
+              </span>
+              <button
+                onClick={() => setSelectedRoundIdx(prev => prev === null ? 0 : prev < rounds.length - 1 ? prev + 1 : prev)}
+                disabled={selectedRoundIdx === rounds.length - 1}
+                className="px-2 py-0.5 rounded bg-blue-400/50 hover:bg-blue-400 disabled:opacity-30 disabled:cursor-not-allowed text-white text-xs font-bold transition"
+              >▶</button>
+            </div>
           </div>
           <div className="p-3 overflow-x-auto">
             <table className="w-full text-xs border-collapse">
@@ -237,13 +255,18 @@ export default function DashboardPage() {
                 </tr>
               </thead>
               <tbody>
-                {currentRound && products.map(p => {
+                {products.map(p => {
                   let total = 0;
                   return (
                     <tr key={p.id} className="border-b hover:bg-blue-50">
                       <td className="p-2 font-medium text-blue-600 bg-gray-50">{p.name}</td>
                       {branches.map(b => {
-                        const qty = getRoundQty(currentRound, b.id, p.id);
+                        let qty = 0;
+                        if (selectedRoundIdx === null) {
+                          rounds.forEach(r => { qty += getRoundQty(r, b.id, p.id); });
+                        } else {
+                          qty = getRoundQty(rounds[selectedRoundIdx], b.id, p.id);
+                        }
                         total += qty;
                         return <td key={b.id} className="p-2 text-center">{qty || '-'}</td>;
                       })}
