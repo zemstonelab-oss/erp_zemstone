@@ -122,6 +122,7 @@ export interface ExtraOrderRequest {
   reason?: string;
   memo?: string;
   desiredDate?: string;
+  desiredTime?: string;
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
   requestedBy?: number;
   reviewedBy?: number;

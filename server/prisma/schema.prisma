@@ -159,6 +159,7 @@ model ExtraOrderRequest {
   reason      String?
   memo        String?
   desiredDate DateTime? @map("desired_date") @db.Date
+  desiredTime String?   @map("desired_time") @db.VarChar(30)
   status      String    @default("PENDING") @db.VarChar(20)
   requestedBy Int?      @map("requested_by")
   reviewedBy  Int?      @map("reviewed_by")

@@ -17,6 +17,7 @@ export default function ExtraOrderPage() {
   const [reason, setReason] = useState('');
   const [memo, setMemo] = useState('');
   const [desiredDate, setDesiredDate] = useState('');
+  const [desiredTime, setDesiredTime] = useState('');
 
   const load = async () => {
     const [p, r, inv] = await Promise.all([
@@ -71,12 +72,14 @@ export default function ExtraOrderPage() {
           reason: reason || undefined,
           memo: memo || undefined,
           desiredDate: desiredDate || undefined,
+          desiredTime: desiredTime || undefined,
         })
       ));
       setCart([]);
       setReason('');
       setMemo('');
       setDesiredDate('');
+      setDesiredTime('');
       alert(`${cart.length}건의 출고 요청이 등록되었습니다.`);
       load();
     } catch (e: any) {
@@ -190,11 +193,22 @@ export default function ExtraOrderPage() {
           </div>
         )}
 
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-4 gap-4">
           <div>
             <label className="block text-xs font-semibold text-gray-500 mb-1">희망 배송일</label>
             <input type="date" value={desiredDate} onChange={e => setDesiredDate(e.target.value)}
               className="w-full px-3 py-2.5 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500" />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-1">희망 배송시간</label>
+            <select value={desiredTime} onChange={e => setDesiredTime(e.target.value)}
+              className="w-full px-3 py-2.5 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500">
+              <option value="">시간 선택</option>
+              <option value="09:00~12:00">오전 (09~12시)</option>
+              <option value="12:00~15:00">오후 초 (12~15시)</option>
+              <option value="15:00~18:00">오후 후 (15~18시)</option>
+              <option value="시간 무관">시간 무관</option>
+            </select>
           </div>
           <div>
             <label className="block text-xs font-semibold text-gray-500 mb-1">사유</label>
@@ -204,7 +218,7 @@ export default function ExtraOrderPage() {
           <div>
             <label className="block text-xs font-semibold text-gray-500 mb-1">특이사항</label>
             <input value={memo} onChange={e => setMemo(e.target.value)}
-              placeholder="예: 포장 따로, 오전 배송 필수" className="w-full px-3 py-2.5 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500" />
+              placeholder="예: 포장 따로" className="w-full px-3 py-2.5 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500" />
           </div>
         </div>
 
@@ -233,7 +247,7 @@ export default function ExtraOrderPage() {
               <th className="px-4 py-3 text-center">수량</th>
               <th className="px-4 py-3 text-left">사유</th>
               <th className="px-4 py-3 text-left">특이사항</th>
-              <th className="px-4 py-3 text-center">희망일</th>
+              <th className="px-4 py-3 text-center">희망일시</th>
               <th className="px-4 py-3 text-center">상태</th>
               <th className="px-4 py-3 text-center">요청일</th>
             </tr>
@@ -245,7 +259,10 @@ export default function ExtraOrderPage() {
                 <td className="px-4 py-3 text-center">{r.quantity}</td>
                 <td className="px-4 py-3 text-gray-600 text-xs">{r.reason || '-'}</td>
                 <td className="px-4 py-3 text-gray-600 text-xs">{r.memo || '-'}</td>
-                <td className="px-4 py-3 text-center text-xs text-gray-500">{r.desiredDate ? new Date(r.desiredDate).toLocaleDateString('ko-KR') : '-'}</td>
+                <td className="px-4 py-3 text-center text-xs text-gray-500">
+                  {r.desiredDate ? new Date(r.desiredDate).toLocaleDateString('ko-KR') : '-'}
+                  {r.desiredTime && <div className="text-gray-400">{r.desiredTime}</div>}
+                </td>
                 <td className="px-4 py-3 text-center">
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusLabel[r.status].color}`}>
                     {statusLabel[r.status].text}

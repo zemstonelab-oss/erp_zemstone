@@ -17,6 +17,7 @@ const createSchema = z.object({
   reason: z.string().optional(),
   memo: z.string().optional(),
   desiredDate: z.string().optional(),
+  desiredTime: z.string().optional(),
 });
 
 // List
@@ -45,7 +46,7 @@ extraOrdersRouter.get('/', authenticate, async (req: Request, res: Response) => 
 // Create (BRANCH only)
 extraOrdersRouter.post('/', authenticate, requireRole('BRANCH'), validate(createSchema), async (req: Request, res: Response) => {
   try {
-    const { productId, quantity, reason, memo, desiredDate } = req.body;
+    const { productId, quantity, reason, memo, desiredDate, desiredTime } = req.body;
     const branchId = req.user!.branchId;
     if (!branchId) { res.status(400).json({ error: '사업소 정보가 없습니다.' }); return; }
 
@@ -53,6 +54,7 @@ extraOrdersRouter.post('/', authenticate, requireRole('BRANCH'), validate(create
       data: {
         branchId, productId, quantity, reason, memo,
         desiredDate: desiredDate ? new Date(desiredDate) : null,
+        desiredTime: desiredTime || null,
         requestedBy: req.user!.userId,
       },
       include: { branch: true, product: true },
