@@ -1,0 +1,177 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  HQ
+  BRANCH
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique @db.VarChar(50)
+  password  String   @db.VarChar(255)
+  name      String   @db.VarChar(100)
+  role      Role
+  branchId  Int?     @map("branch_id")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  branch         Branch?             @relation(fields: [branchId], references: [id])
+  createdRounds  OrderRound[]
+  shipments      Shipment[]
+  notifications  Notification[]
+  extraRequests  ExtraOrderRequest[] @relation("requested")
+  extraReviews   ExtraOrderRequest[] @relation("reviewed")
+
+  @@map("users")
+}
+
+model Branch {
+  id        Int      @id @default(autoincrement())
+  code      String   @unique @db.VarChar(10)
+  name      String   @db.VarChar(100)
+  address   String?  @db.VarChar(255)
+  manager   String?  @db.VarChar(50)
+  phone     String?  @db.VarChar(20)
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  users             User[]
+  orderRoundItems   OrderRoundItem[]
+  shipments         Shipment[]
+  inventory         Inventory[]
+  extraOrderRequests ExtraOrderRequest[]
+
+  @@map("branches")
+}
+
+model Product {
+  id        Int      @id @default(autoincrement())
+  code      String   @unique @db.VarChar(10)
+  name      String   @db.VarChar(100)
+  category  String?  @db.VarChar(50)
+  unit      String   @default("박스") @db.VarChar(10)
+  price     Int      @default(0)
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  orderRoundItems    OrderRoundItem[]
+  shipmentItems      ShipmentItem[]
+  inventory          Inventory[]
+  extraOrderRequests ExtraOrderRequest[]
+
+  @@map("products")
+}
+
+model OrderRound {
+  id        Int      @id @default(autoincrement())
+  roundNo   Int      @map("round_no")
+  orderDate DateTime @map("order_date") @db.Date
+  memo      String?
+  createdBy Int?     @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  creator User?            @relation(fields: [createdBy], references: [id])
+  items   OrderRoundItem[]
+
+  @@map("order_rounds")
+}
+
+model OrderRoundItem {
+  id        Int @id @default(autoincrement())
+  roundId   Int @map("round_id")
+  branchId  Int @map("branch_id")
+  productId Int @map("product_id")
+  quantity  Int @default(0)
+
+  round   OrderRound @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  branch  Branch     @relation(fields: [branchId], references: [id])
+  product Product    @relation(fields: [productId], references: [id])
+
+  @@unique([roundId, branchId, productId])
+  @@map("order_round_items")
+}
+
+model Shipment {
+  id           Int       @id @default(autoincrement())
+  branchId     Int       @map("branch_id")
+  deliveryDate DateTime? @map("delivery_date") @db.Date
+  notes        String?
+  createdBy    Int?      @map("created_by")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  branch  Branch         @relation(fields: [branchId], references: [id])
+  creator User?          @relation(fields: [createdBy], references: [id])
+  items   ShipmentItem[]
+
+  @@map("shipments")
+}
+
+model ShipmentItem {
+  id         Int @id @default(autoincrement())
+  shipmentId Int @map("shipment_id")
+  productId  Int @map("product_id")
+  quantity   Int
+
+  shipment Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  product  Product  @relation(fields: [productId], references: [id])
+
+  @@unique([shipmentId, productId])
+  @@map("shipment_items")
+}
+
+model Inventory {
+  id           Int      @id @default(autoincrement())
+  branchId     Int      @map("branch_id")
+  productId    Int      @map("product_id")
+  totalOrdered Int      @default(0) @map("total_ordered")
+  totalShipped Int      @default(0) @map("total_shipped")
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at")
+
+  branch  Branch  @relation(fields: [branchId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@unique([branchId, productId])
+  @@map("inventory")
+}
+
+model ExtraOrderRequest {
+  id          Int       @id @default(autoincrement())
+  branchId    Int       @map("branch_id")
+  productId   Int       @map("product_id")
+  quantity    Int
+  reason      String?
+  status      String    @default("PENDING") @db.VarChar(20)
+  requestedBy Int?      @map("requested_by")
+  reviewedBy  Int?      @map("reviewed_by")
+  reviewedAt  DateTime? @map("reviewed_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  branch    Branch  @relation(fields: [branchId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
+  requester User?   @relation("requested", fields: [requestedBy], references: [id])
+  reviewer  User?   @relation("reviewed", fields: [reviewedBy], references: [id])
+
+  @@map("extra_order_requests")
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  type      String   @db.VarChar(30)
+  title     String?  @db.VarChar(200)
+  message   String?
+  isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("notifications")
+}

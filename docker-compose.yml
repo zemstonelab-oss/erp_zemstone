@@ -1,0 +1,16 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:16
+    container_name: zemstone-scm-db
+    environment:
+      POSTGRES_DB: zemstone_scm
+      POSTGRES_USER: zemstone
+      POSTGRES_PASSWORD: zemstone1234
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
