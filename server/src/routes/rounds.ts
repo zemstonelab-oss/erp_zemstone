@@ -6,6 +6,7 @@ import { requireRole } from '../middleware/role';
 import { validate } from '../middleware/validate';
 import { recalculateAllInventory } from '../services/inventory';
 import { checkLowStockAndNotify } from '../services/notification';
+import { logAction } from '../services/audit';
 
 const prisma = new PrismaClient();
 export const roundsRouter = Router();
@@ -63,6 +64,7 @@ roundsRouter.post('/', authenticate, requireRole('ADMIN'), validate(roundSchema)
     });
 
     await recalculateAllInventory();
+    await logAction(req.user!.userId, 'CREATE', 'order_round', round.id, `${roundNo}차 발주 등록`);
     res.status(201).json(round);
   } catch (e) {
     console.error(e);
@@ -95,6 +97,7 @@ roundsRouter.put('/:id', authenticate, requireRole('ADMIN'), async (req: Request
     });
 
     await recalculateAllInventory();
+    await logAction(req.user!.userId, 'UPDATE', 'order_round', round.id, `${round.roundNo}차 발주 수정`);
     res.json(round);
   } catch (e) {
     console.error(e);
@@ -104,8 +107,10 @@ roundsRouter.put('/:id', authenticate, requireRole('ADMIN'), async (req: Request
 
 roundsRouter.delete('/:id', authenticate, requireRole('ADMIN'), async (req: Request, res: Response) => {
   try {
-    await prisma.orderRound.delete({ where: { id: Number(req.params.id) } });
+    const id = Number(req.params.id);
+    await prisma.orderRound.delete({ where: { id } });
     await recalculateAllInventory();
+    await logAction(req.user!.userId, 'DELETE', 'order_round', id, `발주 차수 삭제`);
     res.json({ success: true });
   } catch { res.status(500).json({ error: '서버 오류' }); }
 });

@@ -8,6 +8,8 @@ export default function ExtraOrderPage() {
   const [productId, setProductId] = useState('');
   const [quantity, setQuantity] = useState('');
   const [reason, setReason] = useState('');
+  const [memo, setMemo] = useState('');
+  const [desiredDate, setDesiredDate] = useState('');
 
   const load = async () => {
     const [p, r] = await Promise.all([
@@ -27,8 +29,10 @@ export default function ExtraOrderPage() {
       productId: Number(productId),
       quantity: Number(quantity),
       reason: reason || undefined,
+      memo: memo || undefined,
+      desiredDate: desiredDate || undefined,
     });
-    setProductId(''); setQuantity(''); setReason('');
+    setProductId(''); setQuantity(''); setReason(''); setMemo(''); setDesiredDate('');
     alert('요청이 등록되었습니다.');
     load();
   };
@@ -48,7 +52,7 @@ export default function ExtraOrderPage() {
       {/* Request Form */}
       <div className="bg-white rounded-xl shadow p-5 mb-6">
         <h3 className="font-semibold mb-4">새 요청</h3>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 gap-4 mb-3">
           <div>
             <label className="block text-xs font-semibold text-gray-500 mb-1">품목</label>
             <select value={productId} onChange={e => setProductId(e.target.value)}
@@ -68,6 +72,18 @@ export default function ExtraOrderPage() {
               placeholder="사유 입력 (선택)" className="w-full px-3 py-2.5 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500" />
           </div>
         </div>
+        <div className="grid grid-cols-3 gap-4">
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 mb-1">희망 배송일</label>
+            <input type="date" value={desiredDate} onChange={e => setDesiredDate(e.target.value)}
+              className="w-full px-3 py-2.5 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500" />
+          </div>
+          <div className="col-span-2">
+            <label className="block text-xs font-semibold text-gray-500 mb-1">특이사항</label>
+            <input value={memo} onChange={e => setMemo(e.target.value)}
+              placeholder="배송 관련 특이사항 (선택, 예: 포장 따로, 오전 배송 필수)" className="w-full px-3 py-2.5 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500" />
+          </div>
+        </div>
         <button onClick={handleSubmit}
           className="mt-4 px-6 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg font-semibold hover:shadow-lg transition">
           요청하기
@@ -85,6 +101,8 @@ export default function ExtraOrderPage() {
               <th className="px-4 py-3 text-left">품목</th>
               <th className="px-4 py-3 text-center">수량</th>
               <th className="px-4 py-3 text-left">사유</th>
+              <th className="px-4 py-3 text-left">특이사항</th>
+              <th className="px-4 py-3 text-center">희망 배송일</th>
               <th className="px-4 py-3 text-center">상태</th>
               <th className="px-4 py-3 text-center">요청일</th>
             </tr>
@@ -95,6 +113,8 @@ export default function ExtraOrderPage() {
                 <td className="px-4 py-3 font-medium">{r.product.name}</td>
                 <td className="px-4 py-3 text-center">{r.quantity}</td>
                 <td className="px-4 py-3 text-gray-600">{r.reason || '-'}</td>
+                <td className="px-4 py-3 text-gray-600">{r.memo || '-'}</td>
+                <td className="px-4 py-3 text-center text-gray-500">{r.desiredDate ? new Date(r.desiredDate).toLocaleDateString('ko-KR') : '-'}</td>
                 <td className="px-4 py-3 text-center">
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusLabel[r.status].color}`}>
                     {statusLabel[r.status].text}
@@ -106,7 +126,7 @@ export default function ExtraOrderPage() {
               </tr>
             ))}
             {requests.length === 0 && (
-              <tr><td colSpan={5} className="px-4 py-10 text-center text-gray-400">요청 내역이 없습니다.</td></tr>
+              <tr><td colSpan={7} className="px-4 py-10 text-center text-gray-400">요청 내역이 없습니다.</td></tr>
             )}
           </tbody>
         </table>

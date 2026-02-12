@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { authenticate } from '../middleware/auth';
 import { requireRole } from '../middleware/role';
 import { validate } from '../middleware/validate';
+import { logAction } from '../services/audit';
 
 const prisma = new PrismaClient();
 export const branchesRouter = Router();
@@ -27,6 +28,7 @@ branchesRouter.get('/', authenticate, async (_req: Request, res: Response) => {
 branchesRouter.post('/', authenticate, requireRole('ADMIN'), validate(branchSchema), async (req: Request, res: Response) => {
   try {
     const branch = await prisma.branch.create({ data: req.body });
+    await logAction(req.user!.userId, 'CREATE', 'branch', branch.id, `사업소 추가: ${branch.name}`);
     res.status(201).json(branch);
   } catch (e: any) {
     if (e.code === 'P2002') { res.status(409).json({ error: '이미 존재하는 사업소 코드입니다.' }); return; }
@@ -40,13 +42,16 @@ branchesRouter.put('/:id', authenticate, requireRole('ADMIN'), async (req: Reque
       where: { id: Number(req.params.id) },
       data: req.body,
     });
+    await logAction(req.user!.userId, 'UPDATE', 'branch', branch.id, `사업소 수정: ${branch.name}`);
     res.json(branch);
   } catch { res.status(500).json({ error: '서버 오류' }); }
 });
 
 branchesRouter.delete('/:id', authenticate, requireRole('ADMIN'), async (req: Request, res: Response) => {
   try {
-    await prisma.branch.update({ where: { id: Number(req.params.id) }, data: { isActive: false } });
+    const id = Number(req.params.id);
+    await prisma.branch.update({ where: { id }, data: { isActive: false } });
+    await logAction(req.user!.userId, 'DELETE', 'branch', id, `사업소 비활성화`);
     res.json({ success: true });
   } catch { res.status(500).json({ error: '서버 오류' }); }
 });

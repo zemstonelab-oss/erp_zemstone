@@ -29,6 +29,7 @@ model User {
   notifications  Notification[]
   extraRequests  ExtraOrderRequest[] @relation("requested")
   extraReviews   ExtraOrderRequest[] @relation("reviewed")
+  auditLogs      AuditLog[]
 
   @@map("users")
 }
@@ -156,6 +157,8 @@ model ExtraOrderRequest {
   productId   Int       @map("product_id")
   quantity    Int
   reason      String?
+  memo        String?
+  desiredDate DateTime? @map("desired_date") @db.Date
   status      String    @default("PENDING") @db.VarChar(20)
   requestedBy Int?      @map("requested_by")
   reviewedBy  Int?      @map("reviewed_by")
@@ -195,4 +198,17 @@ model AlertThreshold {
 
   @@unique([branchId, productId])
   @@map("alert_thresholds")
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  user      User     @relation(fields: [userId], references: [id])
+  action    String   @db.VarChar(20)
+  entity    String   @db.VarChar(50)
+  entityId  Int?     @map("entity_id")
+  detail    String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("audit_logs")
 }

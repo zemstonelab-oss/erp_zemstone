@@ -60,6 +60,8 @@ export default function ExtraOrdersManagePage() {
               <th className="p-3 text-left">품목</th>
               <th className="p-3 text-center">수량</th>
               <th className="p-3 text-left">사유</th>
+              <th className="p-3 text-left">특이사항</th>
+              <th className="p-3 text-center">희망 배송일</th>
               <th className="p-3 text-center">요청자</th>
               <th className="p-3 text-center">요청일</th>
               <th className="p-3 text-center">상태</th>
@@ -73,6 +75,8 @@ export default function ExtraOrdersManagePage() {
                 <td className="p-3">{r.product.name}</td>
                 <td className="p-3 text-center font-semibold">{r.quantity}</td>
                 <td className="p-3 text-gray-600">{r.reason || '-'}</td>
+                <td className="p-3 text-gray-600">{r.memo || '-'}</td>
+                <td className="p-3 text-center text-gray-500">{r.desiredDate ? new Date(r.desiredDate).toLocaleDateString('ko-KR') : '-'}</td>
                 <td className="p-3 text-center">{r.requester?.name || '-'}</td>
                 <td className="p-3 text-center text-gray-500">{new Date(r.createdAt).toLocaleDateString('ko-KR')}</td>
                 <td className="p-3 text-center">
@@ -97,7 +101,7 @@ export default function ExtraOrdersManagePage() {
               </tr>
             ))}
             {requests.length === 0 && (
-              <tr><td colSpan={8} className="p-10 text-center text-gray-400">요청이 없습니다.</td></tr>
+              <tr><td colSpan={10} className="p-10 text-center text-gray-400">요청이 없습니다.</td></tr>
             )}
           </tbody>
         </table>

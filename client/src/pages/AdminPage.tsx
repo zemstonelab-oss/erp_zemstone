@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import api from '../api/client';
-import type { Branch, Product, UserInfo, AlertThreshold, Role } from '../types';
+import type { Branch, Product, UserInfo, AlertThreshold, Role, AuditLog } from '../types';
 
 export default function AdminPage() {
-  const [tab, setTab] = useState<'branches' | 'products' | 'users' | 'thresholds'>('branches');
+  const [tab, setTab] = useState<'branches' | 'products' | 'users' | 'thresholds' | 'auditLogs'>('branches');
   const [branches, setBranches] = useState<Branch[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [users, setUsers] = useState<UserInfo[]>([]);
@@ -25,7 +25,28 @@ export default function AdminPage() {
   // Threshold form
   const [thresholdData, setThresholdData] = useState<Record<string, number>>({});
 
+  // Audit logs
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+  const [auditTotal, setAuditTotal] = useState(0);
+  const [auditPage, setAuditPage] = useState(1);
+  const [auditEntity, setAuditEntity] = useState('');
+  const [auditStartDate, setAuditStartDate] = useState('');
+  const [auditEndDate, setAuditEndDate] = useState('');
+
   useEffect(() => { loadData(); }, []);
+  useEffect(() => { if (tab === 'auditLogs') loadAuditLogs(); }, [tab, auditPage, auditEntity, auditStartDate, auditEndDate]);
+
+  async function loadAuditLogs() {
+    try {
+      const params: any = { page: auditPage, limit: 20 };
+      if (auditEntity) params.entity = auditEntity;
+      if (auditStartDate) params.startDate = auditStartDate;
+      if (auditEndDate) params.endDate = auditEndDate;
+      const { data } = await api.get('/audit-logs', { params });
+      setAuditLogs(data.data);
+      setAuditTotal(data.totalPages);
+    } catch (e) { console.error(e); }
+  }
 
   async function loadData() {
     setLoading(true);
@@ -142,12 +163,12 @@ export default function AdminPage() {
       <h1 className="text-2xl font-bold mb-6">어드민</h1>
 
       <div className="flex gap-2 mb-6 border-b">
-        {(['branches', 'products', 'users', 'thresholds'] as const).map(t => (
+        {(['branches', 'products', 'users', 'thresholds', 'auditLogs'] as const).map(t => (
           <button key={t} onClick={() => setTab(t)}
             className={`px-4 py-2 font-medium border-b-2 transition-colors ${
               tab === t ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'
             }`}>
-            {t === 'branches' ? '사업소 관리' : t === 'products' ? '품목 관리' : t === 'users' ? '사용자 관리' : '잔량 기준치'}
+            {t === 'branches' ? '사업소 관리' : t === 'products' ? '품목 관리' : t === 'users' ? '사용자 관리' : t === 'thresholds' ? '잔량 기준치' : '활동 로그'}
           </button>
         ))}
       </div>
@@ -314,6 +335,82 @@ export default function AdminPage() {
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+      {/* Audit Logs */}
+      {tab === 'auditLogs' && (
+        <div>
+          <div className="bg-white rounded-lg shadow p-4 mb-4">
+            <div className="flex gap-3 items-end flex-wrap">
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1">종류</label>
+                <select value={auditEntity} onChange={e => { setAuditEntity(e.target.value); setAuditPage(1); }}
+                  className="border rounded px-3 py-2 text-sm">
+                  <option value="">전체</option>
+                  <option value="shipment">출고</option>
+                  <option value="order_round">발주</option>
+                  <option value="extra_order">출고 요청</option>
+                  <option value="product">품목</option>
+                  <option value="branch">사업소</option>
+                  <option value="user">사용자</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1">시작일</label>
+                <input type="date" value={auditStartDate} onChange={e => { setAuditStartDate(e.target.value); setAuditPage(1); }}
+                  className="border rounded px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1">종료일</label>
+                <input type="date" value={auditEndDate} onChange={e => { setAuditEndDate(e.target.value); setAuditPage(1); }}
+                  className="border rounded px-3 py-2 text-sm" />
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-lg shadow overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50"><tr>
+                <th className="px-4 py-3 text-left">일시</th>
+                <th className="px-4 py-3 text-left">사용자</th>
+                <th className="px-4 py-3 text-center">액션</th>
+                <th className="px-4 py-3 text-left">대상</th>
+                <th className="px-4 py-3 text-left">상세 내용</th>
+              </tr></thead>
+              <tbody>
+                {auditLogs.map(log => (
+                  <tr key={log.id} className="border-t hover:bg-gray-50">
+                    <td className="px-4 py-3 text-gray-500 text-xs">{new Date(log.createdAt).toLocaleString('ko-KR')}</td>
+                    <td className="px-4 py-3 font-medium">{log.user.name}</td>
+                    <td className="px-4 py-3 text-center">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        log.action === 'CREATE' ? 'bg-green-100 text-green-700' :
+                        log.action === 'UPDATE' ? 'bg-blue-100 text-blue-700' :
+                        'bg-red-100 text-red-700'
+                      }`}>{log.action}</span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="px-2 py-0.5 bg-gray-100 rounded text-xs">{log.entity}</span>
+                      {log.entityId && <span className="text-gray-400 text-xs ml-1">#{log.entityId}</span>}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600">{log.detail || '-'}</td>
+                  </tr>
+                ))}
+                {auditLogs.length === 0 && (
+                  <tr><td colSpan={5} className="p-10 text-center text-gray-400">로그가 없습니다.</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+          {auditTotal > 1 && (
+            <div className="flex justify-center gap-2 mt-4">
+              <button onClick={() => setAuditPage(p => Math.max(1, p - 1))} disabled={auditPage <= 1}
+                className="px-3 py-1.5 border rounded text-sm disabled:opacity-30">이전</button>
+              <span className="px-3 py-1.5 text-sm">{auditPage} / {auditTotal}</span>
+              <button onClick={() => setAuditPage(p => Math.min(auditTotal, p + 1))} disabled={auditPage >= auditTotal}
+                className="px-3 py-1.5 border rounded text-sm disabled:opacity-30">다음</button>
+            </div>
+          )}
         </div>
       )}
 

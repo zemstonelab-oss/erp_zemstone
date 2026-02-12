@@ -6,6 +6,7 @@ import { requireRole } from '../middleware/role';
 import { validate } from '../middleware/validate';
 import { recalculateInventory } from '../services/inventory';
 import { checkLowStockAndNotify, notifyBranchUsers } from '../services/notification';
+import { logAction } from '../services/audit';
 
 const prisma = new PrismaClient();
 export const shipmentsRouter = Router();
@@ -84,6 +85,10 @@ shipmentsRouter.post('/', authenticate, requireRole('ADMIN'), validate(shipmentS
       await checkLowStockAndNotify(branchId, item.productId);
     }
 
+    const itemSummary = shipment.items.map(i => `${i.product.name} ${i.quantity}개`).join(', ');
+    await logAction(req.user!.userId, 'CREATE', 'shipment', shipment.id,
+      `${shipment.branch.name} 출고: ${itemSummary}`);
+
     res.status(201).json(shipment);
   } catch (e) {
     console.error(e);
@@ -155,6 +160,8 @@ shipmentsRouter.delete('/:id', authenticate, requireRole('ADMIN'), async (req: R
     for (const item of shipment.items) {
       await recalculateInventory(shipment.branchId, item.productId);
     }
+
+    await logAction(req.user!.userId, 'DELETE', 'shipment', shipment.id, `출고 #${shipment.id} 삭제`);
 
     res.json({ success: true });
   } catch { res.status(500).json({ error: '서버 오류' }); }

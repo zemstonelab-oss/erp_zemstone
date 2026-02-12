@@ -120,6 +120,8 @@ export interface ExtraOrderRequest {
   productId: number;
   quantity: number;
   reason?: string;
+  memo?: string;
+  desiredDate?: string;
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
   requestedBy?: number;
   reviewedBy?: number;
@@ -148,6 +150,17 @@ export interface AlertThreshold {
   threshold: number;
   branch: Branch;
   product: Product;
+}
+
+export interface AuditLog {
+  id: number;
+  userId: number;
+  action: string;
+  entity: string;
+  entityId?: number;
+  detail?: string;
+  createdAt: string;
+  user: { name: string; username: string };
 }
 
 export interface PaginatedShipments {

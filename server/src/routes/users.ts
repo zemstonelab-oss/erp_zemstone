@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { authenticate } from '../middleware/auth';
 import { requireRole } from '../middleware/role';
 import { validate } from '../middleware/validate';
+import { logAction } from '../services/audit';
 
 const prisma = new PrismaClient();
 export const usersRouter = Router();
@@ -43,6 +44,7 @@ usersRouter.post('/', authenticate, requireRole('ADMIN'), validate(createSchema)
       data: { username, password: hashed, name, role, branchId: branchId || null },
       select: { id: true, username: true, name: true, role: true, branchId: true, isActive: true },
     });
+    await logAction(req.user!.userId, 'CREATE', 'user', user.id, `사용자 추가: ${user.name} (${user.role})`);
     res.status(201).json(user);
   } catch (e: any) {
     if (e.code === 'P2002') { res.status(409).json({ error: '이미 존재하는 아이디입니다.' }); return; }
@@ -61,13 +63,16 @@ usersRouter.put('/:id', authenticate, requireRole('ADMIN'), validate(updateSchem
       data,
       select: { id: true, username: true, name: true, role: true, branchId: true, isActive: true },
     });
+    await logAction(req.user!.userId, 'UPDATE', 'user', user.id, `사용자 수정: ${user.name}`);
     res.json(user);
   } catch { res.status(500).json({ error: '서버 오류' }); }
 });
 
 usersRouter.delete('/:id', authenticate, requireRole('ADMIN'), async (req: Request, res: Response) => {
   try {
-    await prisma.user.update({ where: { id: Number(req.params.id) }, data: { isActive: false } });
+    const id = Number(req.params.id);
+    await prisma.user.update({ where: { id }, data: { isActive: false } });
+    await logAction(req.user!.userId, 'DELETE', 'user', id, `사용자 비활성화`);
     res.json({ success: true });
   } catch { res.status(500).json({ error: '서버 오류' }); }
 });

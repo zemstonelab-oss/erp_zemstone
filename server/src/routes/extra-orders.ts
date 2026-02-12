@@ -6,6 +6,7 @@ import { requireRole } from '../middleware/role';
 import { validate } from '../middleware/validate';
 import { notifyAdminsAndHQ, notifyBranchUsers } from '../services/notification';
 import { recalculateInventory } from '../services/inventory';
+import { logAction } from '../services/audit';
 
 const prisma = new PrismaClient();
 export const extraOrdersRouter = Router();
@@ -14,6 +15,8 @@ const createSchema = z.object({
   productId: z.number().int(),
   quantity: z.number().int().positive(),
   reason: z.string().optional(),
+  memo: z.string().optional(),
+  desiredDate: z.string().optional(),
 });
 
 // List
@@ -42,14 +45,21 @@ extraOrdersRouter.get('/', authenticate, async (req: Request, res: Response) => 
 // Create (BRANCH only)
 extraOrdersRouter.post('/', authenticate, requireRole('BRANCH'), validate(createSchema), async (req: Request, res: Response) => {
   try {
-    const { productId, quantity, reason } = req.body;
+    const { productId, quantity, reason, memo, desiredDate } = req.body;
     const branchId = req.user!.branchId;
     if (!branchId) { res.status(400).json({ error: '사업소 정보가 없습니다.' }); return; }
 
     const request = await prisma.extraOrderRequest.create({
-      data: { branchId, productId, quantity, reason, requestedBy: req.user!.userId },
+      data: {
+        branchId, productId, quantity, reason, memo,
+        desiredDate: desiredDate ? new Date(desiredDate) : null,
+        requestedBy: req.user!.userId,
+      },
       include: { branch: true, product: true },
     });
+
+    await logAction(req.user!.userId, 'CREATE', 'extra_order', request.id,
+      `${request.branch.name} ${request.product.name} ${quantity}개 출고 요청`);
 
     await notifyAdminsAndHQ('EXTRA_ORDER', '출고 요청',
       `${request.branch.name} - ${request.product.name} ${quantity}개 출고 요청`);
@@ -109,6 +119,9 @@ extraOrdersRouter.put('/:id/approve', authenticate, requireRole('ADMIN'), async 
     await notifyBranchUsers(request.branchId, 'EXTRA_ORDER',
       '출고 요청 승인', `${request.product.name} ${request.quantity}개 출고가 승인되어 자동 출고 처리되었습니다.`);
 
+    await logAction(req.user!.userId, 'UPDATE', 'extra_order', extraOrder.id,
+      `${extraOrder.branch.name} ${extraOrder.product.name} ${extraOrder.quantity}개 출고 요청 승인`);
+
     res.json(request);
   } catch (e) {
     console.error(e);
@@ -127,6 +140,9 @@ extraOrdersRouter.put('/:id/reject', authenticate, requireRole('ADMIN'), async (
 
     await notifyBranchUsers(request.branchId, 'EXTRA_ORDER',
       '출고 요청 거절', `${request.product.name} ${request.quantity}개 출고 요청이 거절되었습니다.`);
+
+    await logAction(req.user!.userId, 'UPDATE', 'extra_order', request.id,
+      `${request.branch.name} ${request.product.name} ${request.quantity}개 출고 요청 거절`);
 
     res.json(request);
   } catch { res.status(500).json({ error: '서버 오류' }); }
