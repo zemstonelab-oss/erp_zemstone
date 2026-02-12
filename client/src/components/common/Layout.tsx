@@ -7,13 +7,13 @@ import type { Notification } from '../../types';
 const navItems = [
   // BRANCH
   { path: '/', label: '내 현황', icon: '📊', roles: ['BRANCH'] },
-  { path: '/extra-order', label: '추가발주 요청', icon: '📝', roles: ['BRANCH'] },
+  { path: '/extra-order', label: '출고 요청', icon: '📝', roles: ['BRANCH'] },
   { path: '/my-history', label: '내 히스토리', icon: '📜', roles: ['BRANCH'] },
   // ADMIN
   { path: '/', label: '대시보드', icon: '📊', roles: ['ADMIN', 'HQ'] },
   { path: '/shipment', label: '출고 처리', icon: '📦', roles: ['ADMIN'] },
   { path: '/rounds', label: '차수 관리', icon: '📋', roles: ['ADMIN', 'HQ'] },
-  { path: '/extra-orders', label: '추가발주 관리', icon: '📑', roles: ['ADMIN', 'HQ'] },
+  { path: '/extra-orders', label: '출고 요청 관리', icon: '📑', roles: ['ADMIN', 'HQ'] },
   { path: '/history', label: '히스토리', icon: '📜', roles: ['ADMIN', 'HQ'] },
   { path: '/admin', label: '어드민', icon: '⚙️', roles: ['ADMIN'] },
 ];

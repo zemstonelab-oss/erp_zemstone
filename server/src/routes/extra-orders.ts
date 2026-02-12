@@ -5,6 +5,7 @@ import { authenticate } from '../middleware/auth';
 import { requireRole } from '../middleware/role';
 import { validate } from '../middleware/validate';
 import { notifyAdminsAndHQ, notifyBranchUsers } from '../services/notification';
+import { recalculateInventory } from '../services/inventory';
 
 const prisma = new PrismaClient();
 export const extraOrdersRouter = Router();
@@ -50,31 +51,72 @@ extraOrdersRouter.post('/', authenticate, requireRole('BRANCH'), validate(create
       include: { branch: true, product: true },
     });
 
-    await notifyAdminsAndHQ('EXTRA_ORDER', '추가 발주 요청',
-      `${request.branch.name} - ${request.product.name} ${quantity}개 추가 발주 요청`);
+    await notifyAdminsAndHQ('EXTRA_ORDER', '출고 요청',
+      `${request.branch.name} - ${request.product.name} ${quantity}개 출고 요청`);
 
     res.status(201).json(request);
   } catch { res.status(500).json({ error: '서버 오류' }); }
 });
 
-// Approve
-extraOrdersRouter.put('/:id/approve', authenticate, requireRole('ADMIN', 'HQ'), async (req: Request, res: Response) => {
+// Approve (ADMIN only) — auto-create shipment
+extraOrdersRouter.put('/:id/approve', authenticate, requireRole('ADMIN'), async (req: Request, res: Response) => {
   try {
-    const request = await prisma.extraOrderRequest.update({
+    const extraOrder = await prisma.extraOrderRequest.findUnique({
       where: { id: Number(req.params.id) },
-      data: { status: 'APPROVED', reviewedBy: req.user!.userId, reviewedAt: new Date() },
       include: { branch: true, product: true },
     });
+    if (!extraOrder || extraOrder.status !== 'PENDING') {
+      res.status(400).json({ error: '처리할 수 없는 요청입니다.' }); return;
+    }
+
+    // Check remaining stock (totalOrdered - totalShipped = remaining at Zemstone level)
+    const inventory = await prisma.inventory.findUnique({
+      where: { branchId_productId: { branchId: extraOrder.branchId, productId: extraOrder.productId } },
+    });
+    const totalOrdered = inventory?.totalOrdered || 0;
+    const totalShipped = inventory?.totalShipped || 0;
+    const remaining = totalOrdered - totalShipped;
+    if (remaining < extraOrder.quantity) {
+      res.status(400).json({ error: `잔량 부족: 출고 가능 수량 ${remaining}개, 요청 수량 ${extraOrder.quantity}개` }); return;
+    }
+
+    // Approve + create shipment in transaction
+    const [request, shipment] = await prisma.$transaction(async (tx) => {
+      const req_ = await tx.extraOrderRequest.update({
+        where: { id: extraOrder.id },
+        data: { status: 'APPROVED', reviewedBy: req.user!.userId, reviewedAt: new Date() },
+        include: { branch: true, product: true },
+      });
+
+      const ship = await tx.shipment.create({
+        data: {
+          branchId: extraOrder.branchId,
+          notes: `출고 요청 #${extraOrder.id} 자동 출고`,
+          createdBy: req.user!.userId,
+          items: {
+            create: [{ productId: extraOrder.productId, quantity: extraOrder.quantity }],
+          },
+        },
+        include: { items: true },
+      });
+
+      return [req_, ship];
+    });
+
+    await recalculateInventory(extraOrder.branchId, extraOrder.productId);
 
     await notifyBranchUsers(request.branchId, 'EXTRA_ORDER',
-      '추가 발주 승인', `${request.product.name} ${request.quantity}개 추가 발주가 승인되었습니다.`);
+      '출고 요청 승인', `${request.product.name} ${request.quantity}개 출고가 승인되어 자동 출고 처리되었습니다.`);
 
     res.json(request);
-  } catch { res.status(500).json({ error: '서버 오류' }); }
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: '서버 오류' });
+  }
 });
 
 // Reject
-extraOrdersRouter.put('/:id/reject', authenticate, requireRole('ADMIN', 'HQ'), async (req: Request, res: Response) => {
+extraOrdersRouter.put('/:id/reject', authenticate, requireRole('ADMIN'), async (req: Request, res: Response) => {
   try {
     const request = await prisma.extraOrderRequest.update({
       where: { id: Number(req.params.id) },
@@ -83,7 +125,7 @@ extraOrdersRouter.put('/:id/reject', authenticate, requireRole('ADMIN', 'HQ'), a
     });
 
     await notifyBranchUsers(request.branchId, 'EXTRA_ORDER',
-      '추가 발주 거절', `${request.product.name} ${request.quantity}개 추가 발주가 거절되었습니다.`);
+      '출고 요청 거절', `${request.product.name} ${request.quantity}개 출고 요청이 거절되었습니다.`);
 
     res.json(request);
   } catch { res.status(500).json({ error: '서버 오류' }); }

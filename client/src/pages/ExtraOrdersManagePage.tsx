@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react';
 import api from '../api/client';
+import { useAuthStore } from '../store/authStore';
 import type { ExtraOrderRequest } from '../types';
 
 export default function ExtraOrdersManagePage() {
+  const { user } = useAuthStore();
   const [requests, setRequests] = useState<ExtraOrderRequest[]>([]);
   const [filter, setFilter] = useState<string>('');
+  const isAdmin = user?.role === 'ADMIN';
 
   const load = async () => {
     const params: any = {};
@@ -36,7 +39,7 @@ export default function ExtraOrdersManagePage() {
   return (
     <div>
       <div className="flex justify-between items-center mb-6 pb-4 border-b-2 border-gray-200">
-        <h1 className="text-2xl font-bold">추가발주 관리</h1>
+        <h1 className="text-2xl font-bold">출고 요청 관리</h1>
         <div className="flex gap-2">
           {['', 'PENDING', 'APPROVED', 'REJECTED'].map(s => (
             <button key={s} onClick={() => setFilter(s)}
@@ -78,13 +81,15 @@ export default function ExtraOrdersManagePage() {
                   </span>
                 </td>
                 <td className="p-3 text-center">
-                  {r.status === 'PENDING' ? (
+                  {r.status === 'PENDING' && isAdmin ? (
                     <div className="flex gap-1 justify-center">
                       <button onClick={() => approve(r.id)}
                         className="px-2.5 py-1 bg-green-500 text-white rounded text-xs hover:bg-green-600">승인</button>
                       <button onClick={() => reject(r.id)}
                         className="px-2.5 py-1 bg-red-500 text-white rounded text-xs hover:bg-red-600">거절</button>
                     </div>
+                  ) : r.status === 'PENDING' ? (
+                    <span className="text-xs text-gray-400">대기중</span>
                   ) : (
                     <span className="text-xs text-gray-400">{r.reviewer?.name || '-'}</span>
                   )}

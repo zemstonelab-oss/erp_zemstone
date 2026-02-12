@@ -22,7 +22,7 @@ export default function ExtraOrderPage() {
 
   const handleSubmit = async () => {
     if (!productId || !quantity) { alert('품목과 수량을 입력하세요.'); return; }
-    if (!confirm('추가 발주를 요청하시겠습니까?')) return;
+    if (!confirm('출고를 요청하시겠습니까?')) return;
     await api.post('/extra-orders', {
       productId: Number(productId),
       quantity: Number(quantity),
@@ -42,7 +42,7 @@ export default function ExtraOrderPage() {
   return (
     <div>
       <div className="flex justify-between items-center mb-6 pb-4 border-b-2 border-gray-200">
-        <h1 className="text-2xl font-bold">추가발주 요청</h1>
+        <h1 className="text-2xl font-bold">출고 요청</h1>
       </div>
 
       {/* Request Form */}
