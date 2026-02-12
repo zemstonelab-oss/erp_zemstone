@@ -93,6 +93,7 @@ extraOrdersRouter.put('/:id/approve', authenticate, requireRole('ADMIN'), async 
           branchId: extraOrder.branchId,
           notes: `출고 요청 #${extraOrder.id} 자동 출고`,
           createdBy: req.user!.userId,
+          deliveryStatus: 'PENDING',
           items: {
             create: [{ productId: extraOrder.productId, quantity: extraOrder.quantity }],
           },

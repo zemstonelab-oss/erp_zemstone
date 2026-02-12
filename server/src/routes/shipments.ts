@@ -5,7 +5,7 @@ import { authenticate } from '../middleware/auth';
 import { requireRole } from '../middleware/role';
 import { validate } from '../middleware/validate';
 import { recalculateInventory } from '../services/inventory';
-import { checkLowStockAndNotify } from '../services/notification';
+import { checkLowStockAndNotify, notifyBranchUsers } from '../services/notification';
 
 const prisma = new PrismaClient();
 export const shipmentsRouter = Router();
@@ -85,6 +85,56 @@ shipmentsRouter.post('/', authenticate, requireRole('ADMIN'), validate(shipmentS
     }
 
     res.status(201).json(shipment);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: '서버 오류' });
+  }
+});
+
+// Update delivery status
+const statusUpdateSchema = z.object({
+  deliveryStatus: z.enum(['PENDING', 'PREPARING', 'IN_TRANSIT', 'DELIVERED']).optional(),
+  scheduledDate: z.string().optional().nullable(),
+  scheduledTime: z.string().optional().nullable(),
+  driverName: z.string().optional().nullable(),
+  driverPhone: z.string().optional().nullable(),
+  deliveredAt: z.string().optional().nullable(),
+});
+
+shipmentsRouter.put('/:id/status', authenticate, requireRole('ADMIN'), validate(statusUpdateSchema), async (req: Request, res: Response) => {
+  try {
+    const { deliveryStatus, scheduledDate, scheduledTime, driverName, driverPhone, deliveredAt } = req.body;
+
+    const existing = await prisma.shipment.findUnique({ where: { id: Number(req.params.id) } });
+    if (!existing) { res.status(404).json({ error: '출고를 찾을 수 없습니다.' }); return; }
+
+    const data: any = {};
+    if (deliveryStatus !== undefined) data.deliveryStatus = deliveryStatus;
+    if (scheduledDate !== undefined) data.scheduledDate = scheduledDate ? new Date(scheduledDate) : null;
+    if (scheduledTime !== undefined) data.scheduledTime = scheduledTime;
+    if (driverName !== undefined) data.driverName = driverName;
+    if (driverPhone !== undefined) data.driverPhone = driverPhone;
+    if (deliveredAt !== undefined) data.deliveredAt = deliveredAt ? new Date(deliveredAt) : null;
+
+    const shipment = await prisma.shipment.update({
+      where: { id: Number(req.params.id) },
+      data,
+      include: { branch: true, items: { include: { product: true } } },
+    });
+
+    // Send notification on status change
+    if (deliveryStatus) {
+      const messages: Record<string, string> = {
+        PREPARING: '출고 준비 중입니다',
+        IN_TRANSIT: `배송이 시작되었습니다. 예정시간: ${scheduledTime || shipment.scheduledTime || '미정'}`,
+        DELIVERED: '배송이 완료되었습니다',
+      };
+      if (messages[deliveryStatus]) {
+        await notifyBranchUsers(shipment.branchId, 'DELIVERY', '배송 상태 변경', messages[deliveryStatus]);
+      }
+    }
+
+    res.json(shipment);
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: '서버 오류' });

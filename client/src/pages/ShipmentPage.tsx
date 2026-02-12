@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import api from '../api/client';
-import type { Branch, Product, InventoryItem, Shipment } from '../types';
+import type { Branch, Product, InventoryItem, Shipment, DeliveryStatus } from '../types';
+import { DELIVERY_STATUS_LABELS, DELIVERY_STATUS_COLORS } from '../types';
 
 export default function ShipmentPage() {
   const [branches, setBranches] = useState<Branch[]>([]);
@@ -182,7 +183,12 @@ export default function ShipmentPage() {
                       취소
                     </button>
                     <div className="flex justify-between items-center mb-2">
-                      <span className="font-medium text-sm">{sh.branch.name}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-sm">{sh.branch.name}</span>
+                        <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-semibold ${DELIVERY_STATUS_COLORS[sh.deliveryStatus as DeliveryStatus] || 'bg-gray-200'}`}>
+                          {DELIVERY_STATUS_LABELS[sh.deliveryStatus as DeliveryStatus] || '접수'}
+                        </span>
+                      </div>
                       <span className="text-xs text-gray-400">
                         {new Date(sh.createdAt).toLocaleDateString('ko-KR')}
                       </span>

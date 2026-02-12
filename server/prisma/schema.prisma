@@ -102,12 +102,18 @@ model OrderRoundItem {
 }
 
 model Shipment {
-  id           Int       @id @default(autoincrement())
-  branchId     Int       @map("branch_id")
-  deliveryDate DateTime? @map("delivery_date") @db.Date
-  notes        String?
-  createdBy    Int?      @map("created_by")
-  createdAt    DateTime  @default(now()) @map("created_at")
+  id             Int       @id @default(autoincrement())
+  branchId       Int       @map("branch_id")
+  deliveryDate   DateTime? @map("delivery_date") @db.Date
+  notes          String?
+  createdBy      Int?      @map("created_by")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  deliveryStatus String    @default("PENDING") @map("delivery_status") @db.VarChar(20)
+  scheduledDate  DateTime? @map("scheduled_date") @db.Date
+  scheduledTime  String?   @map("scheduled_time") @db.VarChar(30)
+  deliveredAt    DateTime? @map("delivered_at")
+  driverName     String?   @map("driver_name") @db.VarChar(50)
+  driverPhone    String?   @map("driver_phone") @db.VarChar(20)
 
   branch  Branch         @relation(fields: [branchId], references: [id])
   creator User?          @relation(fields: [createdBy], references: [id])

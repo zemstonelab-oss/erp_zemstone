@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import api from '../api/client';
 import type { Shipment } from '../types';
+import { DELIVERY_STATUS_LABELS, DELIVERY_STATUS_COLORS } from '../types';
+import type { DeliveryStatus } from '../types';
 
 export default function MyHistoryPage() {
   const [shipments, setShipments] = useState<Shipment[]>([]);
@@ -39,6 +41,9 @@ export default function MyHistoryPage() {
               <th className="p-3 text-center">날짜</th>
               <th className="p-3 text-left">품목</th>
               <th className="p-3 text-center">수량</th>
+              <th className="p-3 text-center">배송 상태</th>
+              <th className="p-3 text-center">배송 예정</th>
+              <th className="p-3 text-center">담당자</th>
               <th className="p-3 text-left">비고</th>
             </tr>
           </thead>
@@ -54,19 +59,38 @@ export default function MyHistoryPage() {
                   <td className="p-3 font-medium">{item.product.name}</td>
                   <td className="p-3 text-center">{item.quantity}</td>
                   {idx === 0 && (
-                    <td className="p-3 text-gray-500" rowSpan={sh.items.length}>{sh.notes || '-'}</td>
+                    <>
+                      <td className="p-3 text-center" rowSpan={sh.items.length}>
+                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${DELIVERY_STATUS_COLORS[sh.deliveryStatus as DeliveryStatus] || 'bg-gray-200'}`}>
+                          {DELIVERY_STATUS_LABELS[sh.deliveryStatus as DeliveryStatus] || sh.deliveryStatus}
+                        </span>
+                      </td>
+                      <td className="p-3 text-center text-xs" rowSpan={sh.items.length}>
+                        {sh.scheduledDate ? new Date(sh.scheduledDate).toLocaleDateString('ko-KR') : '-'}
+                        {sh.scheduledTime && <div className="text-gray-500">{sh.scheduledTime}</div>}
+                        {sh.deliveredAt && (
+                          <div className="text-green-600 mt-1">
+                            완료: {new Date(sh.deliveredAt).toLocaleString('ko-KR')}
+                          </div>
+                        )}
+                      </td>
+                      <td className="p-3 text-center text-xs" rowSpan={sh.items.length}>
+                        {sh.driverName || '-'}
+                        {sh.driverPhone && <div className="text-gray-500">{sh.driverPhone}</div>}
+                      </td>
+                      <td className="p-3 text-gray-500" rowSpan={sh.items.length}>{sh.notes || '-'}</td>
+                    </>
                   )}
                 </tr>
               ))
             )}
             {shipments.length === 0 && (
-              <tr><td colSpan={4} className="p-10 text-center text-gray-400">출고 이력이 없습니다.</td></tr>
+              <tr><td colSpan={7} className="p-10 text-center text-gray-400">출고 이력이 없습니다.</td></tr>
             )}
           </tbody>
         </table>
       </div>
 
-      {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex justify-center items-center gap-2 mt-4">
           <button disabled={page <= 1} onClick={() => load(page - 1)}

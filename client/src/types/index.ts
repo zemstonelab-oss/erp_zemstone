@@ -47,6 +47,22 @@ export interface OrderRoundItem {
   product: Product;
 }
 
+export type DeliveryStatus = 'PENDING' | 'PREPARING' | 'IN_TRANSIT' | 'DELIVERED';
+
+export const DELIVERY_STATUS_LABELS: Record<DeliveryStatus, string> = {
+  PENDING: '접수',
+  PREPARING: '준비중',
+  IN_TRANSIT: '배송중',
+  DELIVERED: '배송완료',
+};
+
+export const DELIVERY_STATUS_COLORS: Record<DeliveryStatus, string> = {
+  PENDING: 'bg-gray-200 text-gray-700',
+  PREPARING: 'bg-yellow-200 text-yellow-800',
+  IN_TRANSIT: 'bg-blue-200 text-blue-800',
+  DELIVERED: 'bg-green-200 text-green-800',
+};
+
 export interface Shipment {
   id: number;
   branchId: number;
@@ -56,6 +72,12 @@ export interface Shipment {
   branch: Branch;
   items: ShipmentItem[];
   creator?: { name: string };
+  deliveryStatus: DeliveryStatus;
+  scheduledDate?: string | null;
+  scheduledTime?: string | null;
+  deliveredAt?: string | null;
+  driverName?: string | null;
+  driverPhone?: string | null;
 }
 
 export interface ShipmentItem {
