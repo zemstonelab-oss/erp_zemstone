@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import api from '../../api/client';
 import type { Notification } from '../../types';
@@ -64,6 +64,8 @@ export default function Layout() {
     loadNotifications();
   };
 
+  const location = useLocation();
+
   const filteredNav = navItems.filter(item => user && item.roles.includes(user.role));
   const groupedNav = filteredNav.reduce<{ group: string; items: typeof filteredNav }[]>((acc, item) => {
     const last = acc[acc.length - 1];
@@ -75,6 +77,37 @@ export default function Layout() {
     return acc;
   }, []);
 
+  // Accordion state: all groups open initially
+  const groupNames = useMemo(() => groupedNav.map(g => g.group), [groupedNav]);
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+
+  // Initialize all groups as open
+  useEffect(() => {
+    setOpenGroups(prev => {
+      const next = { ...prev };
+      for (const name of groupNames) {
+        if (!(name in next)) next[name] = true;
+      }
+      return next;
+    });
+  }, [groupNames]);
+
+  // Auto-open the group containing the active route
+  useEffect(() => {
+    const activeGroup = groupedNav.find(g =>
+      g.items.some(item =>
+        item.path === '/' ? location.pathname === '/' : location.pathname.startsWith(item.path)
+      )
+    );
+    if (activeGroup) {
+      setOpenGroups(prev => ({ ...prev, [activeGroup.group]: true }));
+    }
+  }, [location.pathname, groupedNav]);
+
+  const toggleGroup = (group: string) => {
+    setOpenGroups(prev => ({ ...prev, [group]: !prev[group] }));
+  };
+
   return (
     <div className="flex min-h-screen">
       {/* Sidebar */}
@@ -83,28 +116,45 @@ export default function Layout() {
           <h2 className="text-xl font-semibold tracking-widest">ZEMSTONE</h2>
         </div>
         <nav className="py-4">
-          {groupedNav.map((g, gi) => (
-            <div key={g.group} className={gi > 0 ? 'mt-4' : ''}>
-              <div className="px-6 py-1.5 text-xs text-white/40 uppercase tracking-wider">{g.group}</div>
-              {g.items.map(item => (
-                <NavLink
-                  key={item.path + item.label}
-                  to={item.path}
-                  end={item.path === '/'}
-                  className={({ isActive }) =>
-                    `flex items-center px-6 py-3.5 text-sm border-l-4 transition-all ${
-                      isActive
-                        ? 'bg-white/10 text-white border-primary'
-                        : 'text-white/70 border-transparent hover:bg-white/5 hover:text-white'
-                    }`
-                  }
+          {groupedNav.map((g, gi) => {
+            const isOpen = openGroups[g.group] ?? true;
+            return (
+              <div key={g.group} className={gi > 0 ? 'mt-1' : ''}>
+                <button
+                  onClick={() => toggleGroup(g.group)}
+                  className="w-full flex items-center justify-between px-6 py-2 text-xs text-white/50 uppercase tracking-wider cursor-pointer hover:bg-white/5 hover:text-white/70 transition-colors"
                 >
-                  <span className="mr-3 text-base">{item.icon}</span>
-                  {item.label}
-                </NavLink>
-              ))}
-            </div>
-          ))}
+                  <span>{g.group}</span>
+                  <span className="text-[10px] transition-transform duration-200" style={{ transform: isOpen ? 'rotate(0deg)' : 'rotate(-90deg)' }}>▼</span>
+                </button>
+                <div
+                  className="overflow-hidden transition-all duration-200 ease-in-out"
+                  style={{
+                    maxHeight: isOpen ? `${g.items.length * 52}px` : '0px',
+                    opacity: isOpen ? 1 : 0,
+                  }}
+                >
+                  {g.items.map(item => (
+                    <NavLink
+                      key={item.path + item.label}
+                      to={item.path}
+                      end={item.path === '/'}
+                      className={({ isActive }) =>
+                        `flex items-center px-6 py-3.5 text-sm border-l-4 transition-all ${
+                          isActive
+                            ? 'bg-white/10 text-white border-primary'
+                            : 'text-white/70 border-transparent hover:bg-white/5 hover:text-white'
+                        }`
+                      }
+                    >
+                      <span className="mr-3 text-base">{item.icon}</span>
+                      {item.label}
+                    </NavLink>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
         </nav>
 
         {/* User info */}
