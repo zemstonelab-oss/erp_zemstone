@@ -140,7 +140,7 @@ export default function ExtraOrderPage() {
                         <button
                           onClick={() => updateCartFromInventory(item, cartQty - 1)}
                           disabled={cartQty <= 0}
-                          className="w-7 h-7 rounded bg-gray-200 text-gray-600 font-bold hover:bg-gray-300 disabled:opacity-30 disabled:cursor-not-allowed"
+                          className="w-7 h-7 rounded bg-red-100 text-red-600 font-bold hover:bg-red-200 disabled:opacity-30 disabled:cursor-not-allowed"
                         >−</button>
                         <input
                           type="number"
@@ -198,7 +198,7 @@ export default function ExtraOrderPage() {
                             inventory.find(i => i.productId === c.productId)!,
                             c.quantity - 1
                           )}
-                          className="w-7 h-7 rounded bg-gray-200 text-gray-600 font-bold hover:bg-gray-300"
+                          className="w-7 h-7 rounded bg-red-100 text-red-600 font-bold hover:bg-red-200"
                         >−</button>
                         <input
                           type="number"
