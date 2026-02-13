@@ -30,6 +30,7 @@ model User {
   extraRequests  ExtraOrderRequest[] @relation("requested")
   extraReviews   ExtraOrderRequest[] @relation("reviewed")
   auditLogs      AuditLog[]
+  notices        Notice[]
 
   @@map("users")
 }
@@ -199,6 +200,20 @@ model AlertThreshold {
 
   @@unique([branchId, productId])
   @@map("alert_thresholds")
+}
+
+model Notice {
+  id        Int      @id @default(autoincrement())
+  title     String   @db.VarChar(200)
+  content   String
+  authorId  Int      @map("author_id")
+  pinned    Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  author User @relation(fields: [authorId], references: [id])
+
+  @@map("notices")
 }
 
 model AuditLog {

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import api from '../api/client';
 import { useAuthStore } from '../store/authStore';
-import type { DashboardSummary, BranchProgress, InventoryItem, OrderRound, Branch, Product } from '../types';
+import type { DashboardSummary, BranchProgress, InventoryItem, OrderRound, Branch, Product, RoundProgress, Notice } from '../types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 
 export default function DashboardPage() {
@@ -15,6 +15,8 @@ export default function DashboardPage() {
   const [selectedRoundIdx, setSelectedRoundIdx] = useState<number>(0); // 0 = 최신 차수 (desc 정렬)
   const [monthlyTrend, setMonthlyTrend] = useState<{month: string; quantity: number}[]>([]);
   const [branchComparison, setBranchComparison] = useState<{branchName: string; shipped: number}[]>([]);
+  const [roundProgress, setRoundProgress] = useState<RoundProgress[]>([]);
+  const [latestNotices, setLatestNotices] = useState<Notice[]>([]);
 
   const load = async () => {
     const [s, p, inv, r, b, pr] = await Promise.all([
@@ -25,9 +27,11 @@ export default function DashboardPage() {
       api.get('/branches'),
       api.get('/products'),
     ]);
-    const [mt, bc] = await Promise.all([
+    const [mt, bc, rp, ln] = await Promise.all([
       api.get('/dashboard/monthly-trend'),
       api.get('/dashboard/branch-comparison'),
+      api.get('/dashboard/round-progress'),
+      api.get('/notices/latest'),
     ]);
     setSummary(s.data);
     setProgress(p.data);
@@ -37,6 +41,8 @@ export default function DashboardPage() {
     setProducts(pr.data.filter((p: Product) => p.isActive));
     setMonthlyTrend(mt.data);
     setBranchComparison(bc.data);
+    setRoundProgress(rp.data);
+    setLatestNotices(ln.data);
   };
 
   useEffect(() => { load(); }, []);
@@ -151,6 +157,59 @@ export default function DashboardPage() {
           </div>
         ))}
       </div>
+
+      {/* Latest Notices */}
+      {latestNotices.length > 0 && (
+        <div className="bg-white rounded-xl shadow p-4 mb-6">
+          <div className="flex justify-between items-center mb-3">
+            <h2 className="text-sm font-semibold">📢 최신 공지사항</h2>
+            <a href="/notices" className="text-xs text-blue-600 hover:underline">전체보기 →</a>
+          </div>
+          <div className="space-y-2">
+            {latestNotices.map(n => (
+              <div key={n.id} className="flex items-center gap-3 text-sm">
+                {n.pinned && <span className="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded">📌</span>}
+                <span className="font-medium truncate flex-1">{n.title}</span>
+                <span className="text-xs text-gray-400 flex-shrink-0">{new Date(n.createdAt).toLocaleDateString('ko-KR')}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Round Progress */}
+      {roundProgress.length > 0 && (
+        <div className="bg-white rounded-xl shadow p-5 mb-6">
+          <h2 className="text-sm font-semibold mb-4">📦 발주 라운드별 진행률</h2>
+          <div className="space-y-4">
+            {roundProgress.map(rp => {
+              const gradient =
+                rp.rate >= 100 ? 'from-green-500 to-green-400' :
+                rp.rate >= 70 ? 'from-blue-500 to-blue-400' :
+                rp.rate >= 40 ? 'from-orange-500 to-yellow-400' :
+                'from-red-500 to-pink-500';
+              return (
+                <div key={rp.roundId}>
+                  <div className="flex justify-between text-sm mb-1.5">
+                    <span className="font-medium">{rp.roundNo}차 라운드</span>
+                    <span className="text-gray-500">
+                      <span className="font-semibold">{rp.shipped.toLocaleString()}</span>
+                      <span className="text-gray-400"> / {rp.ordered.toLocaleString()}</span>
+                      <span className="ml-2 font-bold">{rp.rate}%</span>
+                    </span>
+                  </div>
+                  <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full bg-gradient-to-r ${gradient} transition-all duration-1000`}
+                      style={{ width: `${Math.min(rp.rate, 100)}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* 2x2 Grid Tables */}
       <div className="grid grid-cols-2 gap-5 mb-6">

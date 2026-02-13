@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZEMSTONE SCM 현황</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans KR',sans-serif;background:#0f172a;color:#e2e8f0;padding:24px;line-height:1.8}
+.container{max-width:860px;margin:0 auto}
+h1{font-size:1.5rem;margin-bottom:8px;color:#f1f5f9}
+.subtitle{color:#94a3b8;font-size:0.9rem;margin-bottom:28px;padding-bottom:16px;border-bottom:2px solid #334155}
+h2{font-size:1.15rem;color:#60a5fa;margin:32px 0 14px;padding-left:12px;border-left:3px solid #3b82f6}
+
+.card{background:#1e293b;border-radius:10px;padding:20px;margin:12px 0;border:1px solid #334155}
+.card h3{color:#f1f5f9;font-size:0.95rem;margin-bottom:12px}
+
+ul{list-style:none;margin:8px 0}
+li{padding:4px 0;font-size:0.88rem;color:#cbd5e1}
+li::before{content:"• ";color:#64748b}
+li.g::before{content:"✓ ";color:#34d399}
+li.r::before{content:"✗ ";color:#f87171}
+
+.decision{background:#1e293b;border:2px solid #f59e0b;border-radius:10px;padding:18px 20px;margin:14px 0}
+.decision .q{color:#fbbf24;font-weight:600;font-size:0.9rem;margin-bottom:6px}
+.decision .desc{color:#94a3b8;font-size:0.85rem;margin-bottom:6px}
+.decision .opt{color:#cbd5e1;font-size:0.85rem}
+
+.tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:0.7rem;font-weight:700;margin-left:4px}
+.must{background:#ef444433;color:#f87171}
+.nice{background:#f59e0b33;color:#fbbf24}
+.later{background:#64748b33;color:#94a3b8}
+
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:0.85rem}
+th{background:#334155;color:#e2e8f0;padding:10px 12px;text-align:left}
+td{padding:10px 12px;border-bottom:1px solid #334155;color:#cbd5e1}
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>ZEMSTONE 판촉물 관리 시스템 현황</h1>
+<p class="subtitle">2026-02-12 기준</p>
+
+<!-- 1 -->
+<h2>1. 지금 되는 것</h2>
+
+<div class="card">
+<h3>관리자 (젬스톤)</h3>
+<ul>
+<li class="g">전체 현황 한눈에 보기 (발주량, 출고량, 잔량, 출고율)</li>
+<li class="g">본사 발주 차수 등록/수정/삭제 — 1차~N차 좌우로 넘기면서 조회</li>
+<li class="g">사업소에서 온 출고 요청 승인/거절 — 승인하면 자동으로 재고 차감</li>
+<li class="g">직접 출고 처리 — 사업소 선택해서 수량 입력 후 출고</li>
+<li class="g">배송 관리 — 상태 변경(접수→준비→배송중→완료), 예정일시, 배송 담당자 입력</li>
+<li class="g">정산 — 기간/사업소별 출고 금액 조회 + 엑셀 다운로드 (물산에는 안 보임)</li>
+<li class="g">사업소/품목/사용자 추가·수정·삭제</li>
+<li class="g">활동 기록 — 누가 언제 뭘 했는지 전부 기록</li>
+<li class="g">월별 출고 추이 그래프 + 사업소별 비교 차트</li>
+<li class="g">잔량 부족 시 자동 알림</li>
+<li class="g">엑셀 다운로드 (재고/출고/발주)</li>
+</ul>
+</div>
+
+<div class="card">
+<h3>삼성물산 (본사)</h3>
+<ul>
+<li class="g">전체 현황 조회 (보기만 가능, 수정 불가)</li>
+<li class="g">차수별 발주 확인</li>
+<li class="g">사업소별 소진율 확인</li>
+<li class="g">출고 이력 조회</li>
+<li class="g">엑셀 다운로드</li>
+</ul>
+</div>
+
+<div class="card">
+<h3>사업소</h3>
+<ul>
+<li class="g">내 재고 현황 확인 (품목별 발주량/출고량/잔량)</li>
+<li class="g">출고 요청 — 여러 품목 한번에 선택, 희망 배송일/시간 지정, 특이사항 메모</li>
+<li class="g">내 출고 이력 + 배송 상태 확인 (지금 어디까지 왔는지)</li>
+<li class="g">배송 담당자 연락처 확인</li>
+<li class="g">알림 (배송 출발, 배송 완료 등)</li>
+</ul>
+</div>
+
+<!-- 2 -->
+<h2>2. 아직 안 된 것</h2>
+
+<table>
+<thead><tr><th>기능</th><th>중요도</th><th>설명</th></tr></thead>
+<tbody>
+<tr><td>핸드폰에서 보기</td><td><span class="tag must">납품 전 필수</span></td><td>지금은 PC에서만 깔끔하게 보임. 사업소 담당자가 폰으로 볼 수 있게 해야 함</td></tr>
+<tr><td>비밀번호 변경</td><td><span class="tag must">납품 전 필수</span></td><td>지금 전부 비밀번호 1234. 첫 로그인 때 바꾸게 해야 함</td></tr>
+<tr><td>외부 접속 가능하게 배포</td><td><span class="tag must">납품 전 필수</span></td><td>지금은 이 컴퓨터에서만 됨. 인터넷으로 접속할 수 있게 서버에 올려야 함</td></tr>
+<tr><td>정산서 PDF</td><td><span class="tag nice">있으면 좋음</span></td><td>엑셀만 있고 PDF 없음. 물산에 제출할 때 깔끔한 정산서</td></tr>
+<tr><td>품목 사진</td><td><span class="tag nice">있으면 좋음</span></td><td>사업소 직원이 품목 구분하기 쉽게. 사진은 나중에 넣으면 됨</td></tr>
+<tr><td>반품 처리</td><td><span class="tag nice">있으면 좋음</span></td><td>불량이나 잘못 보낸 거 반품하면 재고 다시 복구</td></tr>
+<tr><td>공지사항</td><td><span class="tag later">나중에</span></td><td>전체 사업소에 공지 보내기</td></tr>
+<tr><td>문자/카톡 알림</td><td><span class="tag later">나중에</span></td><td>배송 출발하면 자동으로 문자. 별도 비용 발생</td></tr>
+</tbody>
+</table>
+
+<!-- 3 -->
+<h2>3. 사장님이 정해주셔야 할 것</h2>
+
+<div class="decision">
+<div class="q">1. 업무 플로우가 맞는지 물산 컨펌</div>
+<div class="desc">물산이 분기별 발주 → 젬스톤이 공장 생산+창고 보관 → 사업소가 필요할 때마다 출고 요청 → 젬스톤이 배송</div>
+<div class="opt">→ 이 플로우 문서(business-flow.html) 물산 담당자한테 보여주고 맞는지 확인</div>
+</div>
+
+<div class="decision">
+<div class="q">2. "직접 출고 처리" 페이지 유지할 건지</div>
+<div class="desc">지금 관리자가 직접 수량 넣어서 출고하는 페이지가 따로 있음. 사업소가 시스템으로 요청하면 필요 없을 수도 있음.</div>
+<div class="opt">→ A. 유지 (전화/카톡 주문 처리용으로 남김)<br>→ B. 삭제 (출고 요청 승인으로 통합)<br>→ C. 나중에 결정</div>
+</div>
+
+<div class="decision">
+<div class="q">3. 물산도 출고 요청 승인할 수 있게 할 건지</div>
+<div class="desc">지금은 젬스톤만 승인 가능. 물산은 보기만 됨.</div>
+<div class="opt">→ A. 이대로 (젬스톤만 승인)<br>→ B. 물산도 승인 가능하게</div>
+</div>
+
+<div class="decision">
+<div class="q">4. 접속 주소 (도메인)</div>
+<div class="desc">외부에서 접속하려면 인터넷 주소가 필요함.</div>
+<div class="opt">→ A. 회사 도메인 사용 (예: scm.zemstone.co.kr)<br>→ B. 새 도메인 구매 (연 1~2만원)<br>→ C. 무료 주소 사용 (예: zemstone-scm.up.railway.app)</div>
+</div>
+
+<div class="decision">
+<div class="q">5. 사업소 계정은 누가 만들어주는 건지</div>
+<div class="desc">지금은 관리자가 어드민 페이지에서 직접 만들어줌.</div>
+<div class="opt">→ A. 이대로 (젬스톤이 계정 만들어서 알려줌)<br>→ B. 초대 링크 보내서 사업소가 직접 가입</div>
+</div>
+
+<div class="decision">
+<div class="q">6. 납품 전에 추가로 넣을 기능</div>
+<div class="desc">위 "아직 안 된 것" 목록에서 선택</div>
+<div class="opt">추천: 핸드폰 대응 + 비밀번호 변경 + 배포 (이 3개는 필수)</div>
+</div>
+
+<div class="decision">
+<div class="q">7. 기존 전화/카톡 주문 방식은 어떻게 할 건지</div>
+<div class="desc">사업소가 지금까지 전화나 카톡으로 주문하던 걸 이 시스템으로 바꿀 건지.</div>
+<div class="opt">→ A. 완전 대체 (시스템으로만 주문)<br>→ B. 병행 (시스템 + 전화/카톡 둘 다 가능)</div>
+</div>
+
+<!-- 4 -->
+<h2>4. 다음 순서</h2>
+
+<div class="card">
+<h3>납품까지 남은 작업</h3>
+<ul>
+<li>1. 위 7가지 결정</li>
+<li>2. 핸드폰 대응 작업</li>
+<li>3. 비밀번호 변경 기능</li>
+<li>4. 서버에 올리기 (외부 접속 가능하게)</li>
+<li>5. 실제 데이터 넣고 테스트</li>
+<li>6. 물산 시연 / 납품</li>
+</ul>
+</div>
+
+</div>
+</body>
+</html>

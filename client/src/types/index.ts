@@ -172,6 +172,37 @@ export interface PaginatedShipments {
   totalPages: number;
 }
 
+export interface Notice {
+  id: number;
+  title: string;
+  content: string;
+  authorId: number;
+  pinned: boolean;
+  createdAt: string;
+  updatedAt: string;
+  author: { name: string };
+}
+
+export interface RoundProgress {
+  roundId: number;
+  roundNo: number;
+  orderDate: string;
+  ordered: number;
+  shipped: number;
+  rate: number;
+}
+
+export interface ProductRoundProgress {
+  productId: number;
+  name: string;
+  rounds: { roundNo: number; ordered: number; shipped: number; rate: number }[];
+}
+
+export interface BranchShipmentStats {
+  data: Record<string, any>[];
+  branches: string[];
+}
+
 export interface UserInfo {
   id: number;
   username: string;

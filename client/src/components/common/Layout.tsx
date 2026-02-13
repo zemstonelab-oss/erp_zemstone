@@ -15,6 +15,8 @@ const navItems = [
   { path: '/rounds', label: '차수 관리', icon: '📋', roles: ['ADMIN', 'HQ'] },
   { path: '/extra-orders', label: '출고 요청 관리', icon: '📑', roles: ['ADMIN', 'HQ'] },
   { path: '/history', label: '히스토리', icon: '📜', roles: ['ADMIN', 'HQ'] },
+  { path: '/branch-stats', label: '출고 통계', icon: '📈', roles: ['ADMIN', 'HQ'] },
+  { path: '/notices', label: '공지사항', icon: '📢', roles: ['ADMIN', 'HQ', 'BRANCH'] },
   { path: '/billing', label: '정산 관리', icon: '💰', roles: ['ADMIN'] },
   { path: '/admin', label: '어드민', icon: '⚙️', roles: ['ADMIN'] },
 ];

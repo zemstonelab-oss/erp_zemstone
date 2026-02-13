@@ -15,6 +15,7 @@ import { usersRouter } from './routes/users';
 import { exportRouter } from './routes/export';
 import { billingRouter } from './routes/billing';
 import { auditLogsRouter } from './routes/audit-logs';
+import { noticesRouter } from './routes/notices';
 
 dotenv.config();
 
@@ -38,6 +39,7 @@ app.use('/api/users', usersRouter);
 app.use('/api/export', exportRouter);
 app.use('/api/billing', billingRouter);
 app.use('/api/audit-logs', auditLogsRouter);
+app.use('/api/notices', noticesRouter);
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok' });
