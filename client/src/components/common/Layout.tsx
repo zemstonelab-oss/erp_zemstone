@@ -6,19 +6,19 @@ import type { Notification } from '../../types';
 
 const navItems = [
   // BRANCH
-  { path: '/', label: '내 현황', icon: '📊', roles: ['BRANCH'], group: '운영' },
-  { path: '/extra-order', label: '출고 요청', icon: '📝', roles: ['BRANCH'], group: '운영' },
+  { path: '/', label: '내 현황', icon: '📊', roles: ['BRANCH'], group: '업무' },
+  { path: '/extra-order', label: '출고 요청', icon: '📝', roles: ['BRANCH'], group: '업무' },
   { path: '/my-history', label: '내 히스토리', icon: '📜', roles: ['BRANCH'], group: '기록' },
   // ADMIN & HQ
-  { path: '/', label: '대시보드', icon: '📊', roles: ['ADMIN', 'HQ'], group: '운영' },
-  { path: '/shipment', label: '출고 관리', icon: '📦', roles: ['ADMIN'], group: '운영' },
-  { path: '/extra-orders', label: '요청 접수', icon: '📑', roles: ['ADMIN', 'HQ'], group: '운영' },
-  { path: '/rounds', label: '발주 현황', icon: '📋', roles: ['ADMIN', 'HQ'], group: '현황' },
-  { path: '/branch-stats', label: '출고 통계', icon: '📈', roles: ['ADMIN', 'HQ'], group: '현황' },
-  { path: '/billing', label: '비용 정산', icon: '💰', roles: ['ADMIN'], group: '현황' },
+  { path: '/', label: '대시보드', icon: '📊', roles: ['ADMIN', 'HQ'], group: '업무' },
+  { path: '/shipment', label: '출고 관리', icon: '📦', roles: ['ADMIN'], group: '업무' },
+  { path: '/extra-orders', label: '요청 접수', icon: '📑', roles: ['ADMIN', 'HQ'], group: '업무' },
+  { path: '/rounds', label: '발주 현황', icon: '📋', roles: ['ADMIN', 'HQ'], group: '조회' },
+  { path: '/branch-stats', label: '출고 통계', icon: '📈', roles: ['ADMIN', 'HQ'], group: '조회' },
+  { path: '/billing', label: '비용 정산', icon: '💰', roles: ['ADMIN'], group: '조회' },
   { path: '/history', label: '히스토리', icon: '📜', roles: ['ADMIN', 'HQ'], group: '기록' },
   { path: '/notices', label: '공지사항', icon: '📢', roles: ['ADMIN', 'HQ', 'BRANCH'], group: '기록' },
-  { path: '/admin', label: '시스템 설정', icon: '⚙️', roles: ['ADMIN'], group: '설정' },
+  { path: '/admin', label: '시스템 설정', icon: '⚙️', roles: ['ADMIN'], group: '관리' },
 ];
 
 export default function Layout() {
