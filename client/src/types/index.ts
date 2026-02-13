@@ -183,21 +183,6 @@ export interface Notice {
   author: { name: string };
 }
 
-export interface RoundProgress {
-  roundId: number;
-  roundNo: number;
-  orderDate: string;
-  ordered: number;
-  shipped: number;
-  rate: number;
-}
-
-export interface ProductRoundProgress {
-  productId: number;
-  name: string;
-  rounds: { roundNo: number; ordered: number; shipped: number; rate: number }[];
-}
-
 export interface BranchShipmentStats {
   data: Record<string, any>[];
   branches: string[];
