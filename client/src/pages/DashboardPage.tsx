@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import api from '../api/client';
 import { useAuthStore } from '../store/authStore';
 import type { DashboardSummary, BranchProgress, InventoryItem, OrderRound, Branch, Product, Notice } from '../types';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 
 export default function DashboardPage() {
   const user = useAuthStore(s => s.user);
@@ -12,9 +11,7 @@ export default function DashboardPage() {
   const [rounds, setRounds] = useState<OrderRound[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
-  const [selectedRoundIdx, setSelectedRoundIdx] = useState<number>(0); // 0 = 최신 차수 (desc 정렬)
-  const [monthlyTrend, setMonthlyTrend] = useState<{month: string; quantity: number}[]>([]);
-  const [branchComparison, setBranchComparison] = useState<{branchName: string; shipped: number}[]>([]);
+  const [selectedRoundIdx, setSelectedRoundIdx] = useState<number>(0);
   const [latestNotices, setLatestNotices] = useState<Notice[]>([]);
 
   const load = async () => {
@@ -26,9 +23,7 @@ export default function DashboardPage() {
       api.get('/branches'),
       api.get('/products'),
     ]);
-    const [mt, bc, ln] = await Promise.all([
-      api.get('/dashboard/monthly-trend'),
-      api.get('/dashboard/branch-comparison'),
+    const [ln] = await Promise.all([
       api.get('/notices/latest'),
     ]);
     setSummary(s.data);
@@ -37,8 +32,6 @@ export default function DashboardPage() {
     setRounds(r.data);
     setBranches(b.data.filter((br: Branch) => br.isActive));
     setProducts(pr.data.filter((p: Product) => p.isActive));
-    setMonthlyTrend(mt.data);
-    setBranchComparison(bc.data);
     setLatestNotices(ln.data);
   };
 
@@ -334,37 +327,6 @@ export default function DashboardPage() {
               </tbody>
             </table>
           </div>
-        </div>
-      </div>
-
-      {/* Charts */}
-      <div className="grid grid-cols-2 gap-5 mb-6">
-        <div className="bg-white rounded-xl shadow p-5">
-          <h2 className="text-sm font-semibold mb-4">📊 월별 출고 추이 (최근 6개월)</h2>
-          <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={monthlyTrend}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-              <YAxis tick={{ fontSize: 12 }} />
-              <Tooltip />
-              <Bar dataKey="quantity" name="출고 수량" fill="#667eea" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-        <div className="bg-white rounded-xl shadow p-5">
-          <h2 className="text-sm font-semibold mb-4">🏢 사업소별 출고 비교</h2>
-          <ResponsiveContainer width="100%" height={280}>
-            <PieChart>
-              <Pie data={branchComparison} dataKey="shipped" nameKey="branchName"
-                cx="50%" cy="50%" outerRadius={100} label={({ name, percent }: any) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}>
-                {branchComparison.map((_, i) => (
-                  <Cell key={i} fill={['#667eea', '#764ba2', '#f59e0b', '#10b981', '#ef4444', '#6366f1', '#ec4899', '#14b8a6'][i % 8]} />
-                ))}
-              </Pie>
-              <Tooltip />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
         </div>
       </div>
 
