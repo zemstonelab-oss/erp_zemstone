@@ -173,23 +173,61 @@ export default function ExtraOrderPage() {
         <div className="flex justify-between items-center mb-4">
           <h3 className="font-semibold">요청 정보</h3>
           {cart.length > 0 && (
-            <div className="text-sm text-gray-500">
-              선택: {cart.map(c => `${c.productName} ${c.quantity}개`).join(' / ')}
-            </div>
+            <span className="text-sm text-gray-500">{cart.length}개 품목 · 총 {totalCartItems}개</span>
           )}
         </div>
 
         {cart.length > 0 && (
-          <div className="mb-4 p-3 bg-blue-50 rounded-lg">
-            <div className="flex flex-wrap gap-2">
-              {cart.map(c => (
-                <span key={c.productId} className="inline-flex items-center gap-1 px-3 py-1.5 bg-white rounded-full text-sm border border-blue-200">
-                  <span className="font-medium">{c.productName}</span>
-                  <span className="text-blue-600 font-semibold">{c.quantity}개</span>
-                  <button onClick={() => removeFromCart(c.productId)} className="ml-1 text-gray-400 hover:text-red-500">×</button>
-                </span>
-              ))}
-            </div>
+          <div className="mb-4 border border-gray-200 rounded-lg overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500">품목명</th>
+                  <th className="px-4 py-2 text-center text-xs font-semibold text-gray-500 w-44">수량</th>
+                  <th className="px-4 py-2 text-center text-xs font-semibold text-gray-500 w-16">삭제</th>
+                </tr>
+              </thead>
+              <tbody>
+                {cart.map(c => (
+                  <tr key={c.productId} className="border-t hover:bg-gray-50">
+                    <td className="px-4 py-2.5 font-medium">{c.productName}</td>
+                    <td className="px-4 py-2.5 text-center">
+                      <div className="flex items-center justify-center gap-1">
+                        <button
+                          onClick={() => updateCartFromInventory(
+                            inventory.find(i => i.productId === c.productId)!,
+                            c.quantity - 1
+                          )}
+                          className="w-7 h-7 rounded bg-gray-200 text-gray-600 font-bold hover:bg-gray-300"
+                        >−</button>
+                        <input
+                          type="number"
+                          min={1}
+                          max={c.remaining}
+                          value={c.quantity}
+                          onChange={e => {
+                            const v = Math.max(1, Math.min(c.remaining, Number(e.target.value) || 1));
+                            setCart(prev => prev.map(x => x.productId === c.productId ? { ...x, quantity: v } : x));
+                          }}
+                          className="w-16 text-center border-2 border-gray-200 rounded py-1 text-sm focus:outline-none focus:border-blue-500"
+                        />
+                        <button
+                          onClick={() => updateCartFromInventory(
+                            inventory.find(i => i.productId === c.productId)!,
+                            c.quantity + 1
+                          )}
+                          disabled={c.quantity >= c.remaining}
+                          className="w-7 h-7 rounded bg-blue-500 text-white font-bold hover:bg-blue-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                        >+</button>
+                      </div>
+                    </td>
+                    <td className="px-4 py-2.5 text-center">
+                      <button onClick={() => removeFromCart(c.productId)} className="text-gray-400 hover:text-red-500 text-lg">🗑</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
 
