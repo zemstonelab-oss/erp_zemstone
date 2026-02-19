@@ -235,6 +235,7 @@ export default function ExtraOrderPage() {
           <div>
             <label className="block text-xs font-semibold text-gray-500 mb-1">희망 배송일</label>
             <input type="date" value={desiredDate} onChange={e => setDesiredDate(e.target.value)}
+              min={new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
               className="w-full px-3 py-2.5 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500" />
           </div>
           <div>
@@ -242,7 +243,7 @@ export default function ExtraOrderPage() {
             <select value={desiredTime} onChange={e => setDesiredTime(e.target.value)}
               className="w-full px-3 py-2.5 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500">
               <option value="">시간 선택</option>
-              {Array.from({ length: 11 }, (_, i) => i + 8).map(h => (
+              {Array.from({ length: 9 }, (_, i) => i + 10).map(h => (
                 <option key={h} value={`${String(h).padStart(2,'0')}:00`}>{String(h).padStart(2,'0')}:00</option>
               ))}
             </select>
