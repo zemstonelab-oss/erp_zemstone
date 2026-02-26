@@ -107,11 +107,11 @@ export default function ExtraOrderPage() {
       </div>
 
       {/* 재고 현황 + 수량 입력 통합 테이블 */}
-      <div className="bg-white rounded-xl shadow overflow-hidden mb-6">
+      <div className="bg-white rounded-xl shadow overflow-x-auto mb-6">
         <div className="px-4 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white flex justify-between items-center">
           <h3 className="text-sm font-semibold">내 재고 현황 — 수량 입력 후 아래에서 요청하기</h3>
         </div>
-        <table className="w-full text-sm">
+        <table className="w-full text-sm min-w-[600px]">
           <thead className="bg-gray-50">
             <tr>
               <th className="px-4 py-3 text-left">품목명</th>
@@ -231,7 +231,7 @@ export default function ExtraOrderPage() {
           </div>
         )}
 
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
           <div>
             <label className="block text-xs font-semibold text-gray-500 mb-1">희망 배송일</label>
             <input type="date" value={desiredDate} onChange={e => setDesiredDate(e.target.value)}
@@ -274,11 +274,11 @@ export default function ExtraOrderPage() {
       </div>
 
       {/* 요청 내역 */}
-      <div className="bg-white rounded-xl shadow overflow-hidden">
+      <div className="bg-white rounded-xl shadow overflow-x-auto">
         <div className="px-4 py-3 bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white">
           <h3 className="text-sm font-semibold">내 요청 내역</h3>
         </div>
-        <table className="w-full text-sm">
+        <table className="w-full text-sm min-w-[700px]">
           <thead className="bg-gray-50">
             <tr>
               <th className="px-4 py-3 text-left">품목</th>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import api from '../../api/client';
@@ -77,20 +77,17 @@ export default function Layout() {
     return acc;
   }, []);
 
-  // Accordion state: all groups open initially
-  const groupNames = useMemo(() => groupedNav.map(g => g.group), [groupedNav]);
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
-
-  // Initialize all groups as open
-  useEffect(() => {
-    setOpenGroups(prev => {
-      const next = { ...prev };
-      for (const name of groupNames) {
-        if (!(name in next)) next[name] = true;
-      }
-      return next;
-    });
-  }, [groupNames]);
+  // Accordion state: only active group open initially
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
+    const initial: Record<string, boolean> = {};
+    for (const g of groupedNav) {
+      const isActive = g.items.some(item =>
+        item.path === '/' ? location.pathname === '/' : location.pathname.startsWith(item.path)
+      );
+      initial[g.group] = isActive;
+    }
+    return initial;
+  });
 
   // Auto-open the group containing the active route
   useEffect(() => {
@@ -117,7 +114,7 @@ export default function Layout() {
         </div>
         <nav className="py-4">
           {groupedNav.map((g, gi) => {
-            const isOpen = openGroups[g.group] ?? true;
+            const isOpen = openGroups[g.group] ?? false;
             return (
               <div key={g.group} className={gi > 0 ? 'mt-1' : ''}>
                 <button
@@ -225,7 +222,7 @@ export default function Layout() {
           </div>
         </div>
 
-        <div className="p-6">
+        <div className="p-6 overflow-x-auto">
           <Outlet />
         </div>
       </main>

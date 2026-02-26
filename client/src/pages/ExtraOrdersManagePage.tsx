@@ -52,8 +52,8 @@ export default function ExtraOrdersManagePage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow overflow-hidden">
-        <table className="w-full text-sm">
+      <div className="bg-white rounded-xl shadow overflow-x-auto">
+        <table className="w-full text-sm min-w-[700px]">
           <thead className="bg-gray-700 text-white">
             <tr>
               <th className="p-3 text-left">사업소</th>

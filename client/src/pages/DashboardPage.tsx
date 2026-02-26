@@ -78,9 +78,9 @@ export default function DashboardPage() {
           <h1 className="text-2xl font-bold">내 현황</h1>
           <span className="text-sm text-gray-500 bg-white px-4 py-2 rounded-lg shadow-sm">{today}</span>
         </div>
-        <div className="bg-white rounded-xl shadow p-6">
+        <div className="bg-white rounded-xl shadow p-6 overflow-x-auto">
           <h2 className="text-lg font-semibold mb-4">{user.branchName} 재고 현황</h2>
-          <table className="w-full text-sm border-collapse">
+          <table className="w-full text-sm border-collapse min-w-[500px]">
             <thead>
               <tr className="bg-gray-700 text-white">
                 <th className="p-3 text-left">품목</th>
@@ -135,7 +135,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-4 gap-5 mb-6">
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-5 mb-6">
         {summaryCards.map(card => (
           <div key={card.label} className={`bg-white rounded-2xl p-5 shadow border-l-4 ${colorMap[card.color]} flex items-center gap-4 hover:-translate-y-1 transition`}>
             <div className="text-3xl">{card.icon}</div>
@@ -168,7 +168,7 @@ export default function DashboardPage() {
       )}
 
       {/* 2x2 Grid Tables */}
-      <div className="grid grid-cols-2 gap-5 mb-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 mb-6">
         {/* 총 발주량 */}
         <div className="bg-white rounded-xl shadow overflow-hidden">
           <div className="px-4 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white">

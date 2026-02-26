@@ -105,8 +105,8 @@ export default function ShipmentPage() {
                   {branches.find(b => b.id === branchId)?.name} 출고 입력
                 </h3>
               </div>
-              <div className="p-3">
-                <table className="w-full text-sm border-collapse">
+              <div className="p-3 overflow-x-auto">
+                <table className="w-full text-sm border-collapse min-w-[500px]">
                   <thead>
                     <tr className="bg-gray-600 text-white">
                       <th className="p-2.5 text-center">품목</th>

@@ -126,8 +126,8 @@ export default function NoticesPage() {
       )}
 
       {/* List */}
-      <div className="bg-white rounded-xl shadow">
-        <table className="w-full text-sm">
+      <div className="bg-white rounded-xl shadow overflow-x-auto">
+        <table className="w-full text-sm min-w-[600px]">
           <thead>
             <tr className="bg-gray-700 text-white">
               <th className="p-3 text-center w-16">#</th>

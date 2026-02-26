@@ -143,7 +143,7 @@ export default function BillingPage() {
           )}
 
           {data.branches.map(branch => (
-            <div key={branch.branchId} className="bg-white rounded-xl shadow overflow-hidden">
+            <div key={branch.branchId} className="bg-white rounded-xl shadow overflow-x-auto">
               <div className="flex items-center justify-between px-4 py-3 bg-gray-50 border-b">
                 <span className="font-semibold">{branch.branchName} ({branch.branchCode})</span>
                 <span className="text-blue-700 font-bold">{formatWon(branch.total)}</span>

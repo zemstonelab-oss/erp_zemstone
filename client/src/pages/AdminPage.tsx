@@ -195,8 +195,8 @@ export default function AdminPage() {
               )}
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow overflow-hidden">
-            <table className="w-full text-sm">
+          <div className="bg-white rounded-lg shadow overflow-x-auto">
+            <table className="w-full text-sm min-w-[600px]">
               <thead className="bg-gray-50"><tr>
                 <th className="px-4 py-3 text-left">코드</th><th className="px-4 py-3 text-left">이름</th>
                 <th className="px-4 py-3 text-left">주소</th><th className="px-4 py-3 text-left">담당자</th>
@@ -242,8 +242,8 @@ export default function AdminPage() {
               )}
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow overflow-hidden">
-            <table className="w-full text-sm">
+          <div className="bg-white rounded-lg shadow overflow-x-auto">
+            <table className="w-full text-sm min-w-[600px]">
               <thead className="bg-gray-50"><tr>
                 <th className="px-4 py-3 text-left">코드</th><th className="px-4 py-3 text-left">품목명</th>
                 <th className="px-4 py-3 text-left">카테고리</th><th className="px-4 py-3 text-left">단위</th>
@@ -302,8 +302,8 @@ export default function AdminPage() {
               )}
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow overflow-hidden">
-            <table className="w-full text-sm">
+          <div className="bg-white rounded-lg shadow overflow-x-auto">
+            <table className="w-full text-sm min-w-[600px]">
               <thead className="bg-gray-50"><tr>
                 <th className="px-4 py-3 text-left">아이디</th><th className="px-4 py-3 text-left">이름</th>
                 <th className="px-4 py-3 text-center">역할</th><th className="px-4 py-3 text-left">사업소</th>
@@ -368,8 +368,8 @@ export default function AdminPage() {
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow overflow-hidden">
-            <table className="w-full text-sm">
+          <div className="bg-white rounded-lg shadow overflow-x-auto">
+            <table className="w-full text-sm min-w-[600px]">
               <thead className="bg-gray-50"><tr>
                 <th className="px-4 py-3 text-left">일시</th>
                 <th className="px-4 py-3 text-left">사용자</th>
